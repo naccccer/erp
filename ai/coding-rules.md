@@ -7,6 +7,12 @@
 - Avoid giant service files.
 - Do not create cross-module dependencies unless required by contracts.
 
+## Frontend localization baseline
+- UI text must be Farsi by default.
+- Page layout should use RTL direction by default.
+- Use LTR only for technical tokens when needed (for example: code, numbers, IDs).
+- Any non-Farsi UI must be explicitly requested by the task.
+
 ## Module structure
 Each module should contain:
 - README.md

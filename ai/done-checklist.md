@@ -17,6 +17,7 @@ Before finishing a task, confirm all of these:
 - Names match project conventions.
 - The code is simple and local, not overly generic.
 - New logic is placed in the correct use-case folder.
+- For frontend changes: UI is Farsi-first and RTL by default unless explicitly overridden by task scope.
 
 ## Tests
 - A local test was added or updated.

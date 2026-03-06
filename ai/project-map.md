@@ -18,6 +18,11 @@ Build a modular, AI-friendly ERP with a clean core that can grow across industri
 - Prisma only in infra layer
 - Use-case based module structure
 
+## Product locale baseline
+- Primary product language is Farsi (`fa-IR`).
+- Frontend direction is RTL by default.
+- LTR is allowed only for technical content where needed.
+
 ## MVP modules
 - auth
 - products

@@ -19,7 +19,7 @@ html,
 body {
   margin: 0;
   min-height: 100%;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-vazirmatn), "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   color: var(--text-main);
   background: var(--shell-bg);
 }

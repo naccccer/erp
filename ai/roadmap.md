@@ -7,6 +7,7 @@
 - Keep diffs small
 - Do not modify unrelated modules
 - Update docs if behavior/contracts change
+- Frontend output must be Farsi-first and RTL by default unless a phase explicitly says otherwise
 
 ---
 

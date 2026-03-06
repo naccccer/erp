@@ -48,6 +48,8 @@ ConfirmSalesInvoiceUseCase
 - Keep UI components **module-local when possible**.
 - Shared UI components must **not contain business logic**.
 - Shared contracts must come from: `packages/contracts`
+- Frontend UI must be **Farsi-first** by default.
+- Frontend layout direction must be **RTL** by default unless a task explicitly requires otherwise.
 
 
 

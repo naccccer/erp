@@ -50,6 +50,11 @@ If behavior/contracts changed, verify required docs/contracts were updated:
 - `ai/project-map.md`
 - `packages/contracts`
 
+### Frontend locale rule
+For frontend phases or UI diffs, verify:
+- UI content is Farsi-first
+- Layout direction is RTL by default unless task scope explicitly allows otherwise
+
 ## Decision rules
 - `APPROVED` only when all checklist items pass with sufficient evidence
 - Otherwise return `REJECTED`

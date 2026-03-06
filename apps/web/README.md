@@ -11,3 +11,4 @@ This module contains the frontend shell for the ERP web app.
 ## Notes
 - UI is modular and local to `apps/web/src/modules/*`
 - no business logic is implemented in this phase
+- UI baseline is Farsi-first with RTL direction by default
