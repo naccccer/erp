@@ -110,10 +110,10 @@ Stored in `packages/contracts`:
 - shared DTO contracts
 - enums
 
-## First implementation target
-Build only this first:
+## Current implementation target status
+Implemented:
 - `sales/create-sales-invoice`
+- `sales/confirm-sales-invoice` (prepares `sales.invoice.confirmed` event)
 
-Then:
-- `sales/confirm-sales-invoice`
+Next:
 - inventory reaction to sales confirmation

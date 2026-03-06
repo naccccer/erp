@@ -66,6 +66,10 @@ Sales emits events after important actions.
 
 Triggered when a sales invoice is confirmed.
 
+Current Phase 3 behavior:
+- ConfirmSalesInvoice prepares this event through `contract/sales.events.ts`
+- The prepared event payload contains tenant, invoice, and item data for downstream modules
+
 Consumers:
 
 - Inventory → reduce stock
@@ -90,7 +94,7 @@ These are the operations exposed by this module.
 Creates a draft sales invoice.
 
 ### ConfirmSalesInvoice
-Confirms a draft invoice and emits `sales.invoice.confirmed`.
+Confirms a draft invoice and prepares `sales.invoice.confirmed`.
 
 ### CancelSalesInvoice
 Cancels a confirmed invoice and emits `sales.invoice.cancelled`.
