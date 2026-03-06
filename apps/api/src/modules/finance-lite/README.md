@@ -16,4 +16,7 @@ It does NOT manage:
 ## Current Scope
 - module skeleton
 - contract folder placeholder
-- use-cases folder placeholder
+- register-payment use case
+
+## Public Use Cases
+- RegisterPayment
