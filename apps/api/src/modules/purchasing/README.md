@@ -12,8 +12,12 @@ It does NOT manage:
 - finance postings
 
 ## Current Scope
-- module skeleton
 - create-purchase-invoice use case
+- confirm-purchase-invoice use case
 
 ## Public Use Cases
 - CreatePurchaseInvoice
+- ConfirmPurchaseInvoice
+
+## Events Emitted
+- `purchasing.invoice.confirmed`
