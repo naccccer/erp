@@ -121,6 +121,16 @@ Implemented:
 - `sales/confirm-sales-invoice` (prepares `sales.invoice.confirmed` event)
 - `inventory/stock-movement-base` (warehouse, stock movement model, stock balance read model placeholder)
 - `inventory/react-to-sales-invoice-confirmed` (creates OUT stock movements from `sales.invoice.confirmed`)
+- `contacts/module-skeleton`
+- `products/module-skeleton`
+- `finance-lite/module-skeleton`
+- `finance-lite/register-payment`
+- `purchasing/module-skeleton`
+- `purchasing/create-purchase-invoice`
+- `purchasing/confirm-purchase-invoice` (emits `purchasing.invoice.confirmed`)
+- `inventory/react-to-purchase-invoice-confirmed` (creates IN stock movements)
+- `auth/foundation`
+- `web/shell-layout` (sidebar, topbar, sales placeholder page)
 
 Next:
-- contacts module skeleton
+- roadmap phase complete through Phase 17

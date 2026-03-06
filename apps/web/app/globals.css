@@ -1,0 +1,142 @@
+:root {
+  --shell-bg: #f4f6f8;
+  --surface: #ffffff;
+  --surface-muted: #eef2f5;
+  --border: #d7dde2;
+  --text-main: #1b2530;
+  --text-muted: #56606b;
+  --sidebar-bg: #11263d;
+  --sidebar-text: #f0f5fb;
+  --sidebar-link: #b7c8da;
+  --sidebar-link-active-bg: #1f3f61;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text-main);
+  background: var(--shell-bg);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.web-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 248px 1fr;
+}
+
+.web-shell__sidebar {
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  border-right: 1px solid #0f2034;
+  padding: 24px 16px;
+}
+
+.web-shell__main {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.web-shell__topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.web-shell__content {
+  padding: 24px;
+}
+
+.shell-brand {
+  margin: 0 0 24px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.shell-nav {
+  display: grid;
+  gap: 8px;
+}
+
+.shell-nav__item {
+  display: block;
+  color: var(--sidebar-link);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.shell-nav__item:hover {
+  background: #16304b;
+  color: var(--sidebar-text);
+}
+
+.shell-nav__item--active {
+  background: var(--sidebar-link-active-bg);
+  border-color: #32577f;
+  color: var(--sidebar-text);
+}
+
+.topbar-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.topbar-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.topbar-user {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+  background: var(--surface-muted);
+}
+
+.placeholder-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 720px;
+}
+
+.placeholder-title {
+  margin: 0 0 12px;
+  font-size: 22px;
+}
+
+.placeholder-text {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 960px) {
+  .web-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .web-shell__sidebar {
+    border-right: 0;
+    border-bottom: 1px solid #0f2034;
+  }
+}
