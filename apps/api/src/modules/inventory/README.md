@@ -16,7 +16,8 @@ It owns:
 
 ## Event Reactions
 - `sales.invoice.confirmed` -> create `OUT` stock movements for confirmed sales invoice items.
-- Inventory does not mutate sales data; it only records inventory-owned movements.
+- `purchasing.invoice.confirmed` -> create `IN` stock movements for confirmed purchase invoice items.
+- Inventory does not mutate sales or purchasing data; it only records inventory-owned movements.
 
 ## Stock Balance Strategy
 - `StockMovement` is append-only and represents every stock change.
