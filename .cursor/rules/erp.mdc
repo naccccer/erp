@@ -9,7 +9,7 @@ alwaysApply: true
 
 This repository uses an AI-driven workflow for building the ERP.
 
-The system follows a **builder → reviewer → implement → reviewer → git-manager** loop.
+The system follows a **builder -> reviewer -> implement -> reviewer -> git-manager** loop.
 
 ---
 
@@ -25,10 +25,72 @@ Before starting work, read:
 - ai/done-checklist.md
 - ai/reviewer-rules.md
 
+Canonical reviewer policy is in:
+- `.cursor/agents/erp-reviewer.md`
+
 If editing a module, also read:
 
 - module README.md
 - module AGENTS.md
+
+---
+
+# Handoff Contract
+
+All builder -> reviewer requests must include:
+
+- `phase`
+- `review_type`
+- `files`
+- `diff`
+- `attempt`
+
+All reviewer responses must include:
+
+- `verdict`
+- `reason`
+- `violations`
+- `required_fixes`
+- `cautions`
+- `approval_token`
+
+All reviewer -> git-manager requests must include:
+
+- `phase`
+- `verdict`
+- `approval_token`
+- `files`
+
+`git-manager` must refuse commit/push unless:
+
+- `verdict = APPROVED`
+- `approval_token` starts with `APR-`
+
+---
+
+# Autonomous State Machine
+
+Use this exact flow:
+
+`PLAN_REVIEW -> IMPLEMENT -> DIFF_REVIEW -> GIT`
+
+Rules:
+
+1. Start with `attempt = 1`
+2. On `REJECTED` during `PLAN_REVIEW` or `DIFF_REVIEW`:
+   - auto-fix based on `required_fixes`
+   - increment `attempt`
+   - retry from the relevant review state
+3. Max retries for non-git issues: `3`
+4. If `attempt > 3`: stop and escalate to human
+
+Immediate human escalation events (no retry):
+
+- merge conflict
+- non-fast-forward / push rejection
+- remote auth or permission failure
+
+Never merge, rebase, resolve conflicts automatically, or rewrite history.
 
 ---
 
@@ -39,10 +101,10 @@ When `ai/roadmap.md` exists:
 1. Execute **only one phase**
 2. Generate a **short implementation plan**
 3. List **files that will change**
-4. Send the plan to the **erp-reviewer** agent
-5. If approved → implement the phase
-6. Send the final diff to **erp-reviewer**
-7. If approved → send git work to **git-manager**
+4. Send the plan to the **erp-reviewer** agent using the contract keys
+5. If reviewer `APPROVED` -> implement the phase
+6. Send the final diff to **erp-reviewer** using the contract keys
+7. If reviewer `APPROVED` and token is valid -> send git work to **git-manager**
 8. Stop after commit and push
 
 Never execute multiple phases.
@@ -87,53 +149,46 @@ module/
   entities/
   infra/
   use-cases/
+```
 
 Use-case folders contain:
-use-case.ts
-dto.ts
-test.ts
 
-Documentation Policy
+- `use-case.ts`
+- `dto.ts`
+- `test.ts`
+
+---
+
+# Documentation Policy
 
 If behavior or contracts change, update:
 
-module README.md
-
-ai/project-map.md
-
-packages/contracts
+- module `README.md`
+- `ai/project-map.md`
+- `packages/contracts`
 
 Code and documentation must remain consistent.
 
-Git Workflow
+---
 
-After reviewer approval:
+# Git Workflow Output
 
-send the final diff to git-manager
+After successful git-manager execution, return:
 
-git-manager checks git status
+- `staged_files`
+- `commit_message`
+- `commit_hash`
+- `branch`
+- `push_result`
 
-git-manager stages only phase-related files
+---
 
-git-manager creates one commit
-
-git-manager pushes to the current branch upstream
-
-stop
-
-Never merge, rebase, or resolve conflicts automatically.
-
-Completion Conditions
+# Completion Conditions
 
 A phase is finished only when:
 
-roadmap phase goal is satisfied
-
-tests exist for new behavior
-
-scope stayed inside module
-
-reviewer agent approves the diff
-
-git-manager commits and pushes successfully
-
+- roadmap phase goal is satisfied
+- tests exist for new behavior
+- scope stayed inside module
+- reviewer agent approves the diff
+- git-manager commits and pushes successfully
