@@ -1,0 +1,133 @@
+# ERP Cursor Rules
+
+This repository uses an AI-driven workflow for building the ERP.
+
+The system follows a **builder → reviewer → implement → reviewer → git-manager** loop.
+
+---
+
+# Project Context
+
+Before starting work, read:
+
+- AGENTS.md
+- ai/project-map.md
+- ai/module-index.md
+- ai/roadmap.md
+- ai/coding-rules.md
+- ai/done-checklist.md
+- ai/reviewer-rules.md
+
+If editing a module, also read:
+
+- module README.md
+- module AGENTS.md
+
+---
+
+# Phase Execution
+
+When `ai/roadmap.md` exists:
+
+1. Execute **only one phase**
+2. Generate a **short implementation plan**
+3. List **files that will change**
+4. Send the plan to the **erp-reviewer** agent
+5. If approved → implement the phase
+6. Send the final diff to **erp-reviewer**
+7. If approved → send git work to **git-manager**
+8. Stop after commit and push
+
+Never execute multiple phases.
+
+---
+
+# Scope Guard
+
+The AI must:
+
+- modify only the module related to the phase
+- keep diffs small
+- avoid unrelated refactors
+
+If something outside the phase is required:
+
+- list the prerequisite
+- stop execution
+
+---
+
+# Architecture Guardrails
+
+Follow these rules strictly:
+
+- Modular monolith architecture
+- Each module owns its data
+- No direct cross-module data writes
+- Cross-module communication through events/contracts
+- Prisma may only be used inside `infra/`
+
+---
+
+# Coding Structure
+
+Modules follow this structure:
+
+```text
+module/
+  api/
+  contract/
+  entities/
+  infra/
+  use-cases/
+
+Use-case folders contain:
+use-case.ts
+dto.ts
+test.ts
+
+Documentation Policy
+
+If behavior or contracts change, update:
+
+module README.md
+
+ai/project-map.md
+
+packages/contracts
+
+Code and documentation must remain consistent.
+
+Git Workflow
+
+After reviewer approval:
+
+send the final diff to git-manager
+
+git-manager checks git status
+
+git-manager stages only phase-related files
+
+git-manager creates one commit
+
+git-manager pushes to the current branch upstream
+
+stop
+
+Never merge, rebase, or resolve conflicts automatically.
+
+Completion Conditions
+
+A phase is finished only when:
+
+roadmap phase goal is satisfied
+
+tests exist for new behavior
+
+scope stayed inside module
+
+reviewer agent approves the diff
+
+git-manager commits and pushes successfully
+
+

@@ -1,0 +1,119 @@
+# Project Map
+
+## Goal
+Build a modular, AI-friendly ERP with a clean core that can grow across industries.
+
+## Stack
+- Backend: NestJS
+- Frontend: Next.js
+- Database: PostgreSQL
+- ORM: Prisma
+- Repo: Monorepo
+
+## Core architecture
+- Modular monolith
+- Multi-tenant with `tenant_id`
+- RBAC + permissions
+- Internal event-driven communication
+- Prisma only in infra layer
+- Use-case based module structure
+
+## MVP modules
+- auth
+- products
+- contacts
+- inventory
+- sales
+- purchasing
+- finance-lite
+
+## Module responsibilities
+
+### auth
+Owns:
+- users
+- roles
+- permissions
+
+### products
+Owns:
+- products
+- product units
+- price lists
+- price list items
+
+### contacts
+Owns:
+- customers
+- suppliers
+- contact info
+
+### inventory
+Owns:
+- warehouses
+- stock movements
+- stock balances
+- stock transfers
+
+Rule:
+- StockMovement is the source of truth
+- StockBalance is a fast read model
+
+### sales
+Owns:
+- sales invoices
+- sales invoice items
+- sales returns
+
+### purchasing
+Owns:
+- purchase invoices
+- purchase invoice items
+
+### finance-lite
+Owns:
+- payments
+- installment plans
+- installments
+- cheques
+- due dates
+- collection status
+
+## Business rules
+- Negative stock is not allowed.
+- Serial/batch support must be possible later, but not active in MVP.
+- Multiple price lists must exist in the data model, but MVP uses one default list.
+- Real operations happen only after document confirmation.
+- Document statuses:
+  - Draft
+  - Confirmed
+  - Cancelled
+
+## Event flow examples
+
+### Sales invoice confirmed
+- sales emits `sales.invoice.confirmed`
+- inventory creates OUT stock movement
+- finance-lite creates receivable/payment schedule if needed
+
+### Purchase invoice confirmed
+- purchasing emits `purchasing.invoice.confirmed`
+- inventory creates IN stock movement
+
+### Stock transfer confirmed
+- inventory creates one OUT movement and one IN movement
+
+## Shared contracts
+Stored in `packages/contracts`:
+- event names
+- permission keys
+- shared DTO contracts
+- enums
+
+## First implementation target
+Build only this first:
+- `sales/create-sales-invoice`
+
+Then:
+- `sales/confirm-sales-invoice`
+- inventory reaction to sales confirmation
