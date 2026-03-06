@@ -7,3 +7,25 @@ export const SALES_INVOICE_CONFIRMED_EVENT = SALES_EVENTS.INVOICE_CONFIRMED;
 export const SALES_INVOICE_CANCELLED_EVENT = SALES_EVENTS.INVOICE_CANCELLED;
 
 export type SalesEventName = (typeof SALES_EVENTS)[keyof typeof SALES_EVENTS];
+
+export interface SalesInvoiceConfirmedEventItemContract {
+  product_id: string;
+  quantity: number;
+  unit_price: number;
+  discount: number;
+  line_total: number;
+}
+
+export interface SalesInvoiceConfirmedEventPayloadContract {
+  tenant_id: string;
+  invoice_id: string;
+  customer_id: string;
+  invoice_date: Date;
+  total_amount: number;
+  items: SalesInvoiceConfirmedEventItemContract[];
+}
+
+export interface SalesInvoiceConfirmedEventContract {
+  name: typeof SALES_INVOICE_CONFIRMED_EVENT;
+  payload: SalesInvoiceConfirmedEventPayloadContract;
+}

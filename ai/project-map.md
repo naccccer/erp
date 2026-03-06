@@ -118,6 +118,8 @@ Current sales shared contracts:
 Implemented:
 - `sales/create-sales-invoice`
 - `sales/confirm-sales-invoice` (prepares `sales.invoice.confirmed` event)
+- `inventory/stock-movement-base` (warehouse, stock movement model, stock balance read model placeholder)
+- `inventory/react-to-sales-invoice-confirmed` (creates OUT stock movements from `sales.invoice.confirmed`)
 
 Next:
-- inventory reaction to sales confirmation
+- contacts module skeleton
