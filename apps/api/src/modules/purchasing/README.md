@@ -13,5 +13,7 @@ It does NOT manage:
 
 ## Current Scope
 - module skeleton
-- purchase invoice entity placeholder
-- purchase invoice item entity placeholder
+- create-purchase-invoice use case
+
+## Public Use Cases
+- CreatePurchaseInvoice
