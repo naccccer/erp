@@ -1,6 +1,5 @@
 import type { SalesInvoice } from '../entities/sales-invoice.entity';
-
-export const SALES_INVOICE_CONFIRMED_EVENT = 'sales.invoice.confirmed';
+import { SALES_INVOICE_CONFIRMED_EVENT } from '../../../../../../packages/contracts/src/events/sales.events';
 
 export interface SalesInvoiceConfirmedEventItem {
   product_id: string;

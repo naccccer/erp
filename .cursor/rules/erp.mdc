@@ -1,3 +1,10 @@
+---
+description: ERP workflow guardrails and reviewer/git-manager handoff.
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
 # ERP Cursor Rules
 
 This repository uses an AI-driven workflow for building the ERP.
@@ -129,5 +136,4 @@ scope stayed inside module
 reviewer agent approves the diff
 
 git-manager commits and pushes successfully
-
 

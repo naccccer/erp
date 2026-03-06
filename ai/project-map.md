@@ -110,6 +110,10 @@ Stored in `packages/contracts`:
 - shared DTO contracts
 - enums
 
+Current sales shared contracts:
+- `packages/contracts/src/events/sales.events.ts`
+- `packages/contracts/src/permissions/sales.permissions.ts`
+
 ## Current implementation target status
 Implemented:
 - `sales/create-sales-invoice`

@@ -69,6 +69,7 @@ Triggered when a sales invoice is confirmed.
 Current Phase 3 behavior:
 - ConfirmSalesInvoice prepares this event through `contract/sales.events.ts`
 - The prepared event payload contains tenant, invoice, and item data for downstream modules
+- Event names are centralized in `packages/contracts/src/events/sales.events.ts`
 
 Consumers:
 

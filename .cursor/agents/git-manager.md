@@ -1,7 +1,8 @@
 ---
 name: git-manager
+model: inherit
 description: Handles git status, staging, commit, and push after reviewer approval.
-tools: [run_terminal_cmd, read_file, grep_search]
+readonly: false
 ---
 
 You are the git manager for this ERP repository.
@@ -39,9 +40,3 @@ Examples:
 - commit message
 - commit hash
 - pushed branch
-
-## If there are unrelated files
-- do not commit
-- do not push
-- list them
-- stop

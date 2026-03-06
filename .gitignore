@@ -38,6 +38,7 @@ coverage/
 # Temp
 tmp/
 temp/
+.tmp/
 
 # Generated
 *.tsbuildinfo
