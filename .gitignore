@@ -1,1 +1,43 @@
-node_modules
+# Node
+node_modules/
+npm-debug.log*
+pnpm-debug.log*
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Prisma
+prisma/migrations/
+
+# Coverage
+coverage/
+
+# IDE
+.vscode/
+.idea/
+
+# Cursor
+.cursor/cache/
+
+# Temp
+tmp/
+temp/
+
+# Generated
+*.tsbuildinfo
