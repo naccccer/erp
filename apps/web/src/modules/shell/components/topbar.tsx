@@ -2,10 +2,12 @@ export function Topbar() {
   return (
     <>
       <div>
-        <h2 className="topbar-title">Web Shell</h2>
-        <p className="topbar-subtitle">Phase 17 placeholder layout</p>
+        <h2 className="topbar-title">پوسته وب</h2>
+        <p className="topbar-subtitle">چیدمان اولیه فاز ۱۷</p>
       </div>
-      <div className="topbar-user">Tenant: default</div>
+      <div className="topbar-user">
+        مستاجر: <span dir="ltr">default</span>
+      </div>
     </>
   );
 }

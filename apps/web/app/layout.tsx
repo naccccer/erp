@@ -5,8 +5,8 @@ import "./globals.css";
 import { WebShellLayout } from "../src/modules/shell/components/web-shell-layout";
 
 export const metadata: Metadata = {
-  title: "ERP Web",
-  description: "ERP web shell",
+  title: "وب اپ ERP",
+  description: "پوسته وب ERP",
 };
 
 type RootLayoutProps = {
@@ -15,7 +15,7 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en">
+    <html lang="fa" dir="rtl">
       <body>
         <WebShellLayout>{children}</WebShellLayout>
       </body>

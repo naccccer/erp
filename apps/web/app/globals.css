@@ -38,7 +38,7 @@ a {
 .web-shell__sidebar {
   background: var(--sidebar-bg);
   color: var(--sidebar-text);
-  border-right: 1px solid #0f2034;
+  border-inline-end: 1px solid #0f2034;
   padding: 24px 16px;
 }
 
@@ -136,7 +136,7 @@ a {
   }
 
   .web-shell__sidebar {
-    border-right: 0;
+    border-inline-end: 0;
     border-bottom: 1px solid #0f2034;
   }
 }

@@ -7,16 +7,16 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { href: "/sales", label: "Sales", active: true },
-  { href: "#", label: "Contacts" },
-  { href: "#", label: "Products" },
-  { href: "#", label: "Inventory" },
-  { href: "#", label: "Finance" },
+  { href: "/sales", label: "فروش", active: true },
+  { href: "#", label: "مخاطبین" },
+  { href: "#", label: "کالاها" },
+  { href: "#", label: "انبار" },
+  { href: "#", label: "مالی" },
 ];
 
 export function Sidebar() {
   return (
-    <nav aria-label="Main navigation">
+    <nav aria-label="ناوبری اصلی">
       <h1 className="shell-brand">ERP</h1>
       <div className="shell-nav">
         {navItems.map((item) => (
