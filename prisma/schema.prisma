@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum InvoiceStatus {
+  Draft
+  Confirmed
+  Cancelled
+}
+
+enum MovementType {
+  IN
+  OUT
+}
+
+model SalesInvoice {
+  id           String             @id @default(uuid())
+  tenant_id    String
+  customer_id  String
+  invoice_date DateTime
+  status       InvoiceStatus
+  total_amount Float
+  items        SalesInvoiceItem[]
+
+  @@index([tenant_id])
+}
+
+model SalesInvoiceItem {
+  id         String       @id @default(uuid())
+  tenant_id  String
+  invoice_id String
+  product_id String
+  quantity   Float
+  unit_price Float
+  discount   Float
+  line_total Float
+  invoice    SalesInvoice @relation(fields: [invoice_id], references: [id], onDelete: Cascade)
+
+  @@index([tenant_id])
+  @@index([invoice_id])
+}
+
+model PurchaseInvoice {
+  id           String                @id @default(uuid())
+  tenant_id    String
+  supplier_id  String
+  invoice_date DateTime
+  status       InvoiceStatus
+  total_amount Float
+  items        PurchaseInvoiceItem[]
+
+  @@index([tenant_id])
+}
+
+model PurchaseInvoiceItem {
+  id         String          @id @default(uuid())
+  tenant_id  String
+  invoice_id String
+  product_id String
+  quantity   Float
+  unit_cost  Float
+  line_total Float
+  invoice    PurchaseInvoice @relation(fields: [invoice_id], references: [id], onDelete: Cascade)
+
+  @@index([tenant_id])
+  @@index([invoice_id])
+}
+
+model Warehouse {
+  id              String          @id @default(uuid())
+  tenant_id       String
+  code            String
+  name            String
+  is_active       Boolean
+  stock_movements StockMovement[]
+
+  @@index([tenant_id])
+}
+
+model StockMovement {
+  id             String       @id @default(uuid())
+  tenant_id      String
+  warehouse_id   String
+  product_id     String
+  movement_type  MovementType
+  quantity       Float
+  occurred_at    DateTime
+  reference_type String?
+  reference_id   String?
+  warehouse      Warehouse    @relation(fields: [warehouse_id], references: [id], onDelete: Restrict)
+
+  @@index([tenant_id])
+  @@index([warehouse_id])
+}
+
+model Payment {
+  id             String   @id @default(uuid())
+  tenant_id      String
+  reference_type String
+  reference_id   String
+  amount         Float
+  paid_at        DateTime
+  status         String
+
+  @@index([tenant_id])
+}
