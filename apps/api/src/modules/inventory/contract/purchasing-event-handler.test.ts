@@ -5,10 +5,43 @@ import {
   PURCHASING_INVOICE_CONFIRMED_EVENT,
   type PurchasingInvoiceConfirmedEventContract,
 } from '../../../../../../packages/contracts/src/events/purchasing.events.ts';
+import type { StockMovement } from '../entities/stock-movement.entity.ts';
+import type { IStockMovementRepository } from '../infra/stock-movement.repository.ts';
+import type { IWarehouseRepository } from '../infra/warehouse.repository.ts';
+import {
+  CreatePurchaseInvoiceStockInMovementsUseCase,
+} from '../use-cases/create-purchase-invoice-stock-in-movements/use-case.ts';
 import { PurchasingInvoiceConfirmedInventoryEventHandler } from './purchasing-invoice-confirmed.handler.ts';
 
-test('reacts to purchasing.invoice.confirmed and creates IN stock movements', () => {
-  const handler = new PurchasingInvoiceConfirmedInventoryEventHandler();
+class InMemoryStockMovementRepository implements IStockMovementRepository {
+  private readonly movements: StockMovement[] = [];
+
+  async createMany(movements: StockMovement[]): Promise<StockMovement[]> {
+    this.movements.push(...movements);
+    return movements;
+  }
+
+  async findByReference(referenceId: string): Promise<StockMovement[]> {
+    return this.movements.filter((movement) => movement.reference_id === referenceId);
+  }
+}
+
+const warehouseRepository: IWarehouseRepository = {
+  findDefaultByTenantId: async (tenantId: string) => ({
+    id: `warehouse-${tenantId}`,
+    tenant_id: tenantId,
+    code: 'MAIN',
+    name: 'Main Warehouse',
+    is_active: true,
+  }),
+};
+
+test('reacts to purchasing.invoice.confirmed and creates IN stock movements', async () => {
+  const handler = new PurchasingInvoiceConfirmedInventoryEventHandler(
+    new CreatePurchaseInvoiceStockInMovementsUseCase(),
+    new InMemoryStockMovementRepository(),
+    warehouseRepository,
+  );
 
   const event: PurchasingInvoiceConfirmedEventContract = {
     name: PURCHASING_INVOICE_CONFIRMED_EVENT,
@@ -29,7 +62,7 @@ test('reacts to purchasing.invoice.confirmed and creates IN stock movements', ()
     },
   };
 
-  const movements = handler.execute({
+  const movements = await handler.execute({
     event,
     warehouse_id: 'warehouse-1',
   });

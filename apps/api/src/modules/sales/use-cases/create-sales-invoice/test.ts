@@ -1,12 +1,20 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import type { SalesInvoice } from '../../entities/sales-invoice.entity';
+import type { ISalesInvoiceRepository } from '../../infra/sales-invoice.repository';
 import { CreateSalesInvoiceUseCase } from './use-case';
 
-test('creates a draft sales invoice and calculates totals', () => {
-  const useCase = new CreateSalesInvoiceUseCase();
+test('creates a draft sales invoice, persists it, and calculates totals', async () => {
+  const repository: ISalesInvoiceRepository = {
+    create: async (invoice: SalesInvoice) => invoice,
+    update: async (invoice: SalesInvoice) => invoice,
+    findById: async () => null,
+    listByTenant: async () => [],
+  };
+  const useCase = new CreateSalesInvoiceUseCase(repository);
 
-  const invoice = useCase.execute({
+  const invoice = await useCase.execute({
     tenant_id: 'tenant-1',
     customer_id: 'customer-1',
     invoice_date: new Date('2026-03-06'),

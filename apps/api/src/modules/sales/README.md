@@ -66,9 +66,10 @@ Sales emits events after important actions.
 
 Triggered when a sales invoice is confirmed.
 
-Current Phase 3 behavior:
-- ConfirmSalesInvoice prepares this event through `contract/sales.events.ts`
+Current Phase 21 behavior:
+- `ConfirmSalesInvoiceUseCase` prepares this event through `contract/sales.events.ts`
 - The prepared event payload contains tenant, invoice, and item data for downstream modules
+- The event is emitted through Nest `EventEmitter2` using the shared event name
 - Event names are centralized in `packages/contracts/src/events/sales.events.ts`
 
 Consumers:
@@ -92,10 +93,10 @@ Consumers:
 These are the operations exposed by this module.
 
 ### CreateSalesInvoice
-Creates a draft sales invoice.
+Creates and persists a draft sales invoice through `ISalesInvoiceRepository`.
 
 ### ConfirmSalesInvoice
-Confirms a draft invoice and prepares `sales.invoice.confirmed`.
+Confirms a draft invoice, persists status change, and emits `sales.invoice.confirmed`.
 
 ### CancelSalesInvoice
 Cancels a confirmed invoice and emits `sales.invoice.cancelled`.
@@ -149,8 +150,10 @@ Possible future features:
 
 ---
 
-# Nest Wiring (Phase 19)
+# Nest Wiring (Phase 21)
 
 - `SalesModule` registers these providers:
+  - `PrismaSalesInvoiceRepository`
+  - `ISalesInvoiceRepository` token -> `PrismaSalesInvoiceRepository`
   - `CreateSalesInvoiceUseCase`
   - `ConfirmSalesInvoiceUseCase`

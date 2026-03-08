@@ -15,8 +15,8 @@ It owns:
 - Other modules interact with inventory through events/contracts.
 
 ## Event Reactions
-- `sales.invoice.confirmed` -> create `OUT` stock movements for confirmed sales invoice items.
-- `purchasing.invoice.confirmed` -> create `IN` stock movements for confirmed purchase invoice items.
+- `sales.invoice.confirmed` -> `@OnEvent` handler resolves tenant default warehouse and persists `OUT` stock movements.
+- `purchasing.invoice.confirmed` -> `@OnEvent` handler resolves tenant default warehouse and persists `IN` stock movements.
 - Inventory does not mutate sales or purchasing data; it only records inventory-owned movements.
 
 ## Stock Balance Strategy
@@ -24,8 +24,12 @@ It owns:
 - `StockBalance` is a read model derived from movement aggregation.
 - No direct manual stock mutation is allowed; writes must be new stock movements.
 
-## Nest Wiring (Phase 19)
+## Nest Wiring (Phase 21)
 - `InventoryModule` registers:
+  - `PrismaStockMovementRepository`
+  - `IStockMovementRepository` token -> `PrismaStockMovementRepository`
+  - `PrismaWarehouseRepository`
+  - `IWarehouseRepository` token -> `PrismaWarehouseRepository`
   - `CreateSalesInvoiceStockOutMovementsUseCase`
   - `CreatePurchaseInvoiceStockInMovementsUseCase`
   - `SalesInvoiceConfirmedInventoryEventHandler`

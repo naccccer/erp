@@ -138,7 +138,9 @@ Implemented:
 - `auth/foundation`
 - `web/shell-layout` (sidebar, topbar, sales placeholder page; shell-only visibility)
 - `api/bootstrap` (`apps/api/src/main.ts`, `apps/api/src/app.module.ts`, and provider wiring in sales, purchasing, inventory, finance-lite modules)
+- `core/prisma-schema` (all core models and enums in `prisma/schema.prisma`)
+- `core/infra-repositories-event-bus` (sales + inventory Prisma repositories, Nest event bus wiring, and sales-confirmation -> inventory movement persistence loop)
 
 Next:
-- `Phase 20 - Prisma schema: all core models`
+- `Phase 22 - Core HTTP API`
 

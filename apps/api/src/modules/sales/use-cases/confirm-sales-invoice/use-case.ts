@@ -1,10 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import {
   prepareSalesInvoiceConfirmedEvent,
   type SalesInvoiceConfirmedEvent,
 } from '../../contract/sales.events';
 import type { SalesInvoice } from '../../entities/sales-invoice.entity';
+import {
+  SALES_INVOICE_REPOSITORY,
+  type ISalesInvoiceRepository,
+} from '../../infra/sales-invoice.repository';
 import type { ConfirmSalesInvoiceDto } from './dto';
 
 export interface ConfirmSalesInvoiceResult {
@@ -14,7 +19,13 @@ export interface ConfirmSalesInvoiceResult {
 
 @Injectable()
 export class ConfirmSalesInvoiceUseCase {
-  execute(input: ConfirmSalesInvoiceDto): ConfirmSalesInvoiceResult {
+  constructor(
+    @Inject(SALES_INVOICE_REPOSITORY)
+    private readonly salesInvoiceRepository: ISalesInvoiceRepository,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
+
+  async execute(input: ConfirmSalesInvoiceDto): Promise<ConfirmSalesInvoiceResult> {
     if (input.invoice.status !== 'Draft') {
       throw new Error('Only draft sales invoices can be confirmed.');
     }
@@ -23,10 +34,14 @@ export class ConfirmSalesInvoiceUseCase {
       ...input.invoice,
       status: 'Confirmed',
     };
+    const persistedInvoice = await this.salesInvoiceRepository.update(confirmedInvoice);
+    const event = prepareSalesInvoiceConfirmedEvent(persistedInvoice);
+
+    await this.eventEmitter.emitAsync(event.name, event.payload);
 
     return {
-      invoice: confirmedInvoice,
-      events: [prepareSalesInvoiceConfirmedEvent(confirmedInvoice)],
+      invoice: persistedInvoice,
+      events: [event],
     };
   }
 }

@@ -1,14 +1,23 @@
 import { randomUUID } from 'node:crypto';
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import type { SalesInvoiceItem } from '../../entities/sales-invoice-item.entity';
 import type { SalesInvoice } from '../../entities/sales-invoice.entity';
+import {
+  SALES_INVOICE_REPOSITORY,
+  type ISalesInvoiceRepository,
+} from '../../infra/sales-invoice.repository';
 import type { CreateSalesInvoiceDto } from './dto';
 
 @Injectable()
 export class CreateSalesInvoiceUseCase {
-  execute(input: CreateSalesInvoiceDto): SalesInvoice {
+  constructor(
+    @Inject(SALES_INVOICE_REPOSITORY)
+    private readonly salesInvoiceRepository: ISalesInvoiceRepository,
+  ) {}
+
+  async execute(input: CreateSalesInvoiceDto): Promise<SalesInvoice> {
     const invoiceId = randomUUID();
 
     const items: SalesInvoiceItem[] = input.items.map((item) => {
@@ -29,7 +38,7 @@ export class CreateSalesInvoiceUseCase {
 
     const totalAmount = items.reduce((sum, item) => sum + item.line_total, 0);
 
-    return {
+    const invoice: SalesInvoice = {
       id: invoiceId,
       tenant_id: input.tenant_id,
       customer_id: input.customer_id,
@@ -38,5 +47,7 @@ export class CreateSalesInvoiceUseCase {
       total_amount: totalAmount,
       items,
     };
+
+    return this.salesInvoiceRepository.create(invoice);
   }
 }

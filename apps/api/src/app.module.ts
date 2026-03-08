@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
@@ -10,6 +11,7 @@ import { SalesModule } from './modules/sales/sales.module';
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     AuthModule,
     ContactsModule,
     FinanceLiteModule,

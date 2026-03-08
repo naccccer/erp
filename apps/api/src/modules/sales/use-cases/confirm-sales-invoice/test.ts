@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import type { SalesInvoice } from '../../entities/sales-invoice.entity';
+import type { ISalesInvoiceRepository } from '../../infra/sales-invoice.repository';
 import { ConfirmSalesInvoiceUseCase } from './use-case';
 
 function makeInvoice(status: SalesInvoice['status']): SalesInvoice {
@@ -37,10 +39,25 @@ function makeInvoice(status: SalesInvoice['status']): SalesInvoice {
   };
 }
 
-test('confirms a draft sales invoice and prepares sales.invoice.confirmed event', () => {
-  const useCase = new ConfirmSalesInvoiceUseCase();
+test('confirms a draft sales invoice, persists it, and emits sales.invoice.confirmed', async () => {
+  const repository: ISalesInvoiceRepository = {
+    create: async (invoice: SalesInvoice) => invoice,
+    update: async (invoice: SalesInvoice) => invoice,
+    findById: async () => null,
+    listByTenant: async () => [],
+  };
+  const eventEmitter = new EventEmitter2();
+  let emittedEventName = '';
+  let emittedPayloadInvoiceId = '';
 
-  const result = useCase.execute({ invoice: makeInvoice('Draft') });
+  eventEmitter.on('sales.invoice.confirmed', (payload: { invoice_id: string }) => {
+    emittedEventName = 'sales.invoice.confirmed';
+    emittedPayloadInvoiceId = payload.invoice_id;
+  });
+
+  const useCase = new ConfirmSalesInvoiceUseCase(repository, eventEmitter);
+
+  const result = await useCase.execute({ invoice: makeInvoice('Draft') });
 
   assert.equal(result.invoice.status, 'Confirmed');
   assert.equal(result.events.length, 1);
@@ -50,21 +67,35 @@ test('confirms a draft sales invoice and prepares sales.invoice.confirmed event'
   assert.equal(result.events[0].payload.items.length, 2);
   assert.equal(result.events[0].payload.items[0].product_id, 'product-1');
   assert.equal(result.events[0].payload.items[0].quantity, 2);
+  assert.equal(emittedEventName, 'sales.invoice.confirmed');
+  assert.equal(emittedPayloadInvoiceId, 'invoice-1');
 });
 
-test('throws when invoice is already confirmed', () => {
-  const useCase = new ConfirmSalesInvoiceUseCase();
+test('throws when invoice is already confirmed', async () => {
+  const repository: ISalesInvoiceRepository = {
+    create: async (invoice: SalesInvoice) => invoice,
+    update: async (invoice: SalesInvoice) => invoice,
+    findById: async () => null,
+    listByTenant: async () => [],
+  };
+  const useCase = new ConfirmSalesInvoiceUseCase(repository, new EventEmitter2());
 
-  assert.throws(
+  await assert.rejects(
     () => useCase.execute({ invoice: makeInvoice('Confirmed') }),
     /Only draft sales invoices can be confirmed\./,
   );
 });
 
-test('throws when invoice is cancelled', () => {
-  const useCase = new ConfirmSalesInvoiceUseCase();
+test('throws when invoice is cancelled', async () => {
+  const repository: ISalesInvoiceRepository = {
+    create: async (invoice: SalesInvoice) => invoice,
+    update: async (invoice: SalesInvoice) => invoice,
+    findById: async () => null,
+    listByTenant: async () => [],
+  };
+  const useCase = new ConfirmSalesInvoiceUseCase(repository, new EventEmitter2());
 
-  assert.throws(
+  await assert.rejects(
     () => useCase.execute({ invoice: makeInvoice('Cancelled') }),
     /Only draft sales invoices can be confirmed\./,
   );
