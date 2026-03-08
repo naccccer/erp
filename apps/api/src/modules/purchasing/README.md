@@ -21,3 +21,11 @@ It does NOT manage:
 
 ## Events Emitted
 - `purchasing.invoice.confirmed`
+
+## Shared Contracts
+- `packages/contracts/src/permissions/purchasing.permissions.ts`
+
+## Nest Wiring (Phase 19)
+- `PurchasingModule` registers:
+  - `CreatePurchaseInvoiceUseCase`
+  - `ConfirmPurchaseInvoiceUseCase`

@@ -20,3 +20,7 @@ It does NOT manage:
 
 ## Public Use Cases
 - RegisterPayment
+
+## Nest Wiring (Phase 19)
+- `FinanceLiteModule` registers:
+  - `RegisterPaymentUseCase`

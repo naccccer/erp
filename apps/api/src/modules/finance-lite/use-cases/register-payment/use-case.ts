@@ -1,8 +1,11 @@
 import { randomUUID } from 'node:crypto';
 
+import { Injectable } from '@nestjs/common';
+
 import type { Payment } from '../../entities/payment.entity.ts';
 import type { RegisterPaymentDto } from './dto.ts';
 
+@Injectable()
 export class RegisterPaymentUseCase {
   execute(input: RegisterPaymentDto): Payment {
     return {

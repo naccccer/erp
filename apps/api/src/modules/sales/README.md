@@ -146,3 +146,11 @@ Possible future features:
 - sales orders / quotations
 - price list selection
 - promotions
+
+---
+
+# Nest Wiring (Phase 19)
+
+- `SalesModule` registers these providers:
+  - `CreateSalesInvoiceUseCase`
+  - `ConfirmSalesInvoiceUseCase`

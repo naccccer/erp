@@ -1,3 +1,5 @@
+import { Injectable } from '@nestjs/common';
+
 import {
   prepareSalesInvoiceConfirmedEvent,
   type SalesInvoiceConfirmedEvent,
@@ -10,6 +12,7 @@ export interface ConfirmSalesInvoiceResult {
   events: SalesInvoiceConfirmedEvent[];
 }
 
+@Injectable()
 export class ConfirmSalesInvoiceUseCase {
   execute(input: ConfirmSalesInvoiceDto): ConfirmSalesInvoiceResult {
     if (input.invoice.status !== 'Draft') {

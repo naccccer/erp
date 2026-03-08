@@ -1,9 +1,12 @@
 import { randomUUID } from 'node:crypto';
 
+import { Injectable } from '@nestjs/common';
+
 import { SALES_INVOICE_CONFIRMED_EVENT } from '../../../../../../../packages/contracts/src/events/sales.events.ts';
 import type { StockMovement } from '../../entities/stock-movement.entity.ts';
 import type { CreateSalesInvoiceStockOutMovementsDto } from './dto.ts';
 
+@Injectable()
 export class CreateSalesInvoiceStockOutMovementsUseCase {
   execute(input: CreateSalesInvoiceStockOutMovementsDto): StockMovement[] {
     return input.payload.items.map((item) => ({

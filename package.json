@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "pnpm exec tsc --noEmit -p apps/api/tsconfig.json",
+    "start:api": "pnpm exec ts-node --project apps/api/tsconfig.json apps/api/src/main.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:structure-drift": "node ai/tests/structure-drift.test.cjs"
   },

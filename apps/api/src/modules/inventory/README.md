@@ -23,3 +23,10 @@ It owns:
 - `StockMovement` is append-only and represents every stock change.
 - `StockBalance` is a read model derived from movement aggregation.
 - No direct manual stock mutation is allowed; writes must be new stock movements.
+
+## Nest Wiring (Phase 19)
+- `InventoryModule` registers:
+  - `CreateSalesInvoiceStockOutMovementsUseCase`
+  - `CreatePurchaseInvoiceStockInMovementsUseCase`
+  - `SalesInvoiceConfirmedInventoryEventHandler`
+  - `PurchasingInvoiceConfirmedInventoryEventHandler`

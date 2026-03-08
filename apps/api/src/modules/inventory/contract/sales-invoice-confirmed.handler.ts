@@ -1,3 +1,5 @@
+import { Injectable } from '@nestjs/common';
+
 import {
   SALES_INVOICE_CONFIRMED_EVENT,
   type SalesInvoiceConfirmedEventContract,
@@ -12,6 +14,7 @@ export interface SalesInvoiceConfirmedInventoryEventHandlerDto {
   warehouse_id: string;
 }
 
+@Injectable()
 export class SalesInvoiceConfirmedInventoryEventHandler {
   private readonly useCase: CreateSalesInvoiceStockOutMovementsUseCase;
 

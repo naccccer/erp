@@ -119,6 +119,7 @@ Current shared contracts:
 - `packages/contracts/src/events/sales.events.ts`
 - `packages/contracts/src/events/purchasing.events.ts`
 - `packages/contracts/src/permissions/sales.permissions.ts`
+- `packages/contracts/src/permissions/purchasing.permissions.ts`
 
 ## Current implementation target status
 Implemented:
@@ -135,7 +136,9 @@ Implemented:
 - `purchasing/confirm-purchase-invoice` (emits `purchasing.invoice.confirmed`)
 - `inventory/react-to-purchase-invoice-confirmed` (creates IN stock movements)
 - `auth/foundation`
-- `web/shell-layout` (sidebar, topbar, sales placeholder page)
+- `web/shell-layout` (sidebar, topbar, sales placeholder page; shell-only visibility)
+- `api/bootstrap` (`apps/api/src/main.ts`, `apps/api/src/app.module.ts`, and provider wiring in sales, purchasing, inventory, finance-lite modules)
 
 Next:
-- roadmap phase complete through Phase 17
+- `Phase 20 - Prisma schema: all core models`
+

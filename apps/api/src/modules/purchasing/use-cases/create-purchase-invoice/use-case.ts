@@ -1,9 +1,12 @@
 import { randomUUID } from 'node:crypto';
 
+import { Injectable } from '@nestjs/common';
+
 import type { PurchaseInvoiceItem } from '../../entities/purchase-invoice-item.entity.ts';
 import type { PurchaseInvoice } from '../../entities/purchase-invoice.entity.ts';
 import type { CreatePurchaseInvoiceDto } from './dto.ts';
 
+@Injectable()
 export class CreatePurchaseInvoiceUseCase {
   execute(input: CreatePurchaseInvoiceDto): PurchaseInvoice {
     const invoiceId = randomUUID();
