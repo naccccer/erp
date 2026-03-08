@@ -130,6 +130,139 @@ a {
   line-height: 1.6;
 }
 
+.sales-page {
+  display: grid;
+  gap: 16px;
+}
+
+.sales-page__header {
+  display: grid;
+  gap: 6px;
+}
+
+.sales-page__title {
+  margin: 0;
+  font-size: 24px;
+}
+
+.sales-page__subtitle {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.sales-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.sales-card__title {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.sales-form {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  align-items: end;
+}
+
+.sales-field {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.sales-field input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-main);
+  background: #fff;
+}
+
+.sales-button {
+  border: 1px solid #2f5b8d;
+  background: #2f5b8d;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.sales-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.sales-button--secondary {
+  border-color: var(--border);
+  background: var(--surface-muted);
+  color: var(--text-main);
+}
+
+.sales-table-wrapper {
+  overflow-x: auto;
+}
+
+.sales-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.sales-table th,
+.sales-table td {
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 8px;
+  font-size: 14px;
+}
+
+.sales-table th {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.sales-empty {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.sales-movement-list {
+  display: grid;
+  gap: 12px;
+}
+
+.sales-movement-item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  background: #fbfcfd;
+}
+
+.sales-movement-item__title {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.sales-movement-item__rows {
+  margin: 0;
+  padding-inline-start: 18px;
+  display: grid;
+  gap: 6px;
+  color: var(--text-main);
+  font-size: 13px;
+}
+
 @media (max-width: 960px) {
   .web-shell {
     grid-template-columns: 1fr;
@@ -138,5 +271,13 @@ a {
   .web-shell__sidebar {
     border-inline-end: 0;
     border-bottom: 1px solid #0f2034;
+  }
+
+  .web-shell__content {
+    padding: 16px;
+  }
+
+  .sales-form {
+    grid-template-columns: 1fr;
   }
 }

@@ -1,5 +1,7 @@
-import { SalesPlaceholderPage } from "../../src/modules/sales/components/sales-placeholder-page";
+import { SalesInvoicesPage } from '../../src/modules/sales/components/sales-invoices-page';
+
+export const dynamic = 'force-dynamic';
 
 export default function SalesPage() {
-  return <SalesPlaceholderPage />;
+  return <SalesInvoicesPage />;
 }
