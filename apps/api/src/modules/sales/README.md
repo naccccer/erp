@@ -66,11 +66,12 @@ Sales emits events after important actions.
 
 Triggered when a sales invoice is confirmed.
 
-Current Phase 21 behavior:
+Current behavior:
 - `ConfirmSalesInvoiceUseCase` prepares this event through `contract/sales.events.ts`
 - The prepared event payload contains tenant, invoice, and item data for downstream modules
-- The event is emitted through Nest `EventEmitter2` using the shared event name
+- The event is emitted through the shared `publishDomainEvents` helper and Nest `EventEmitter2`
 - Event names are centralized in `packages/contracts/src/events/sales.events.ts`
+- Event contract shape follows `packages/contracts/src/events/domain-event.ts`
 
 Consumers:
 
@@ -134,6 +135,12 @@ Inventory
 Finance
 
 Communication with those modules happens only through events.
+
+## Event Ownership Rules (Phase 23.5)
+
+- Sales owns creation and publication of `sales.invoice.confirmed`.
+- Sales does not orchestrate downstream module side effects directly.
+- Consumer modules own their own handlers and idempotency behavior.
 
 ---
 

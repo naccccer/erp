@@ -1,3 +1,5 @@
+import type { DomainEvent } from './domain-event.ts';
+
 export const PURCHASING_EVENTS = {
   INVOICE_CONFIRMED: 'purchasing.invoice.confirmed',
 } as const;
@@ -21,7 +23,8 @@ export interface PurchasingInvoiceConfirmedEventPayloadContract {
   items: PurchasingInvoiceConfirmedEventItemContract[];
 }
 
-export interface PurchasingInvoiceConfirmedEventContract {
-  name: typeof PURCHASING_INVOICE_CONFIRMED_EVENT;
-  payload: PurchasingInvoiceConfirmedEventPayloadContract;
-}
+export interface PurchasingInvoiceConfirmedEventContract
+  extends DomainEvent<
+    typeof PURCHASING_INVOICE_CONFIRMED_EVENT,
+    PurchasingInvoiceConfirmedEventPayloadContract
+  > {}

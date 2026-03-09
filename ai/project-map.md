@@ -108,6 +108,17 @@ Owns:
 ### Stock transfer confirmed
 - inventory creates one OUT movement and one IN movement
 
+## Event orchestration standard (Phase 23.5)
+- Shared event contract: `DomainEvent<name, payload>` in `packages/contracts/src/events/domain-event.ts`.
+- Event publishing pattern: producers publish through `publishDomainEvents` and Nest `EventEmitter2`.
+- Handler registration pattern: `@OnEvent(registration.eventName)` with explicit registration constants.
+- Idempotency guard pattern: handler checks already-processed stock movements before persisting.
+- Handlers must be idempotent and order-independent.
+
+### Event ownership table
+- `sales.invoice.confirmed` -> emitter: sales -> consumers: inventory (implemented), finance-lite (planned)
+- `purchasing.invoice.confirmed` -> emitter: purchasing -> consumers: inventory (implemented)
+
 ## Shared contracts
 Stored in `packages/contracts`:
 - event names
@@ -116,6 +127,7 @@ Stored in `packages/contracts`:
 - enums
 
 Current shared contracts:
+- `packages/contracts/src/events/domain-event.ts`
 - `packages/contracts/src/events/sales.events.ts`
 - `packages/contracts/src/events/purchasing.events.ts`
 - `packages/contracts/src/permissions/sales.permissions.ts`

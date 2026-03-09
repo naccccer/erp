@@ -19,6 +19,13 @@ It owns:
 - `purchasing.invoice.confirmed` -> `@OnEvent` handler resolves tenant default warehouse and persists `IN` stock movements.
 - Inventory does not mutate sales or purchasing data; it only records inventory-owned movements.
 
+## Event Handler Pattern (Phase 23.5)
+- Handler registration is explicit and event-name based through `defineDomainEventHandlerRegistration`.
+- Unsupported event names are rejected through `assertSupportedEventName`.
+- Stock movement side effects are wrapped in `withStockMovementIdempotencyGuard`.
+- Idempotency key uses event name + `reference_id` + `tenant_id` derived from payload.
+- Handlers must be order-independent and safe under duplicate delivery.
+
 ## HTTP API (Phase 23)
 - `GET /inventory/movements?invoiceId=...` -> returns read-only stock movements linked to a confirmed invoice.
 

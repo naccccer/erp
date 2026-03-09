@@ -18,11 +18,19 @@ import {
 import {
   CreatePurchaseInvoiceStockInMovementsUseCase,
 } from '../use-cases/create-purchase-invoice-stock-in-movements/use-case.ts';
+import {
+  assertSupportedEventName,
+  defineDomainEventHandlerRegistration,
+  withStockMovementIdempotencyGuard,
+} from './event-handler.pattern.ts';
 
 export interface PurchasingInvoiceConfirmedInventoryEventHandlerDto {
   event: PurchasingInvoiceConfirmedEventContract;
   warehouse_id: string;
 }
+
+export const PURCHASING_INVOICE_CONFIRMED_HANDLER_REGISTRATION =
+  defineDomainEventHandlerRegistration(PURCHASING_INVOICE_CONFIRMED_EVENT);
 
 @Injectable()
 export class PurchasingInvoiceConfirmedInventoryEventHandler {
@@ -35,14 +43,16 @@ export class PurchasingInvoiceConfirmedInventoryEventHandler {
   ) {}
 
   async execute(input: PurchasingInvoiceConfirmedInventoryEventHandlerDto): Promise<StockMovement[]> {
-    if (input.event.name !== PURCHASING_INVOICE_CONFIRMED_EVENT) {
-      throw new Error('Unsupported purchasing event for inventory handler.');
-    }
+    assertSupportedEventName(
+      PURCHASING_INVOICE_CONFIRMED_HANDLER_REGISTRATION.eventName,
+      input.event.name,
+      'Unsupported purchasing event for inventory handler.',
+    );
 
     return this.createAndPersistMovements(input.event.payload, input.warehouse_id);
   }
 
-  @OnEvent(PURCHASING_INVOICE_CONFIRMED_EVENT)
+  @OnEvent(PURCHASING_INVOICE_CONFIRMED_HANDLER_REGISTRATION.eventName)
   async handle(event: PurchasingInvoiceConfirmedEventPayloadContract): Promise<StockMovement[]> {
     const warehouse = await this.warehouseRepository.findDefaultByTenantId(event.tenant_id);
 
@@ -59,11 +69,19 @@ export class PurchasingInvoiceConfirmedInventoryEventHandler {
     event: PurchasingInvoiceConfirmedEventPayloadContract,
     warehouseId: string,
   ): Promise<StockMovement[]> {
-    const movements = this.useCase.execute({
-      warehouse_id: warehouseId,
-      payload: event,
-    });
+    return withStockMovementIdempotencyGuard({
+      eventName: PURCHASING_INVOICE_CONFIRMED_HANDLER_REGISTRATION.eventName,
+      referenceId: event.invoice_id,
+      tenantId: event.tenant_id,
+      stockMovementRepository: this.stockMovementRepository,
+      persist: async () => {
+        const movements = this.useCase.execute({
+          warehouse_id: warehouseId,
+          payload: event,
+        });
 
-    return this.stockMovementRepository.createMany(movements);
+        return this.stockMovementRepository.createMany(movements);
+      },
+    });
   }
 }

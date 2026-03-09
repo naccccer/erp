@@ -37,9 +37,10 @@ const warehouseRepository: IWarehouseRepository = {
 };
 
 test('reacts to purchasing.invoice.confirmed and creates IN stock movements', async () => {
+  const stockMovementRepository = new InMemoryStockMovementRepository();
   const handler = new PurchasingInvoiceConfirmedInventoryEventHandler(
     new CreatePurchaseInvoiceStockInMovementsUseCase(),
-    new InMemoryStockMovementRepository(),
+    stockMovementRepository,
     warehouseRepository,
   );
 
@@ -66,8 +67,15 @@ test('reacts to purchasing.invoice.confirmed and creates IN stock movements', as
     event,
     warehouse_id: 'warehouse-1',
   });
+  const duplicateDeliveryMovements = await handler.execute({
+    event,
+    warehouse_id: 'warehouse-1',
+  });
+  const persistedMovements = await stockMovementRepository.findByReference('purchase-1');
 
   assert.equal(movements.length, 1);
+  assert.equal(duplicateDeliveryMovements.length, 1);
+  assert.equal(persistedMovements.length, 1);
   assert.equal(movements[0].movement_type, 'IN');
   assert.equal(movements[0].tenant_id, 'tenant-1');
   assert.equal(movements[0].warehouse_id, 'warehouse-1');

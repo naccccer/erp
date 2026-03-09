@@ -18,11 +18,19 @@ import {
 import {
   CreateSalesInvoiceStockOutMovementsUseCase,
 } from '../use-cases/create-sales-invoice-stock-out-movements/use-case.ts';
+import {
+  assertSupportedEventName,
+  defineDomainEventHandlerRegistration,
+  withStockMovementIdempotencyGuard,
+} from './event-handler.pattern.ts';
 
 export interface SalesInvoiceConfirmedInventoryEventHandlerDto {
   event: SalesInvoiceConfirmedEventContract;
   warehouse_id: string;
 }
+
+export const SALES_INVOICE_CONFIRMED_HANDLER_REGISTRATION =
+  defineDomainEventHandlerRegistration(SALES_INVOICE_CONFIRMED_EVENT);
 
 @Injectable()
 export class SalesInvoiceConfirmedInventoryEventHandler {
@@ -35,14 +43,16 @@ export class SalesInvoiceConfirmedInventoryEventHandler {
   ) {}
 
   async execute(input: SalesInvoiceConfirmedInventoryEventHandlerDto): Promise<StockMovement[]> {
-    if (input.event.name !== SALES_INVOICE_CONFIRMED_EVENT) {
-      throw new Error('Unsupported sales event for inventory handler.');
-    }
+    assertSupportedEventName(
+      SALES_INVOICE_CONFIRMED_HANDLER_REGISTRATION.eventName,
+      input.event.name,
+      'Unsupported sales event for inventory handler.',
+    );
 
     return this.createAndPersistMovements(input.event.payload, input.warehouse_id);
   }
 
-  @OnEvent(SALES_INVOICE_CONFIRMED_EVENT)
+  @OnEvent(SALES_INVOICE_CONFIRMED_HANDLER_REGISTRATION.eventName)
   async handle(event: SalesInvoiceConfirmedEventPayloadContract): Promise<StockMovement[]> {
     const warehouse = await this.warehouseRepository.findDefaultByTenantId(event.tenant_id);
 
@@ -59,11 +69,19 @@ export class SalesInvoiceConfirmedInventoryEventHandler {
     event: SalesInvoiceConfirmedEventPayloadContract,
     warehouseId: string,
   ): Promise<StockMovement[]> {
-    const movements = this.useCase.execute({
-      warehouse_id: warehouseId,
-      payload: event,
-    });
+    return withStockMovementIdempotencyGuard({
+      eventName: SALES_INVOICE_CONFIRMED_HANDLER_REGISTRATION.eventName,
+      referenceId: event.invoice_id,
+      tenantId: event.tenant_id,
+      stockMovementRepository: this.stockMovementRepository,
+      persist: async () => {
+        const movements = this.useCase.execute({
+          warehouse_id: warehouseId,
+          payload: event,
+        });
 
-    return this.stockMovementRepository.createMany(movements);
+        return this.stockMovementRepository.createMany(movements);
+      },
+    });
   }
 }

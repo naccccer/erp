@@ -54,6 +54,24 @@ class InMemoryStockMovementRepository implements IStockMovementRepository {
   }
 }
 
+class InMemorySalesAuditProjectionHandler {
+  private readonly processedReferences = new Set<string>();
+  private readonly projectedInvoiceIds: string[] = [];
+
+  async handle(event: SalesInvoiceConfirmedEventContract['payload']): Promise<void> {
+    if (this.processedReferences.has(event.invoice_id)) {
+      return;
+    }
+
+    this.processedReferences.add(event.invoice_id);
+    this.projectedInvoiceIds.push(event.invoice_id);
+  }
+
+  listProjectedInvoiceIds(): string[] {
+    return [...this.projectedInvoiceIds];
+  }
+}
+
 const warehouseRepository: IWarehouseRepository = {
   findDefaultByTenantId: async (tenantId: string) => ({
     id: `warehouse-${tenantId}`,
@@ -107,9 +125,10 @@ test('reacts to sales.invoice.confirmed and creates OUT stock movements', async 
   assert.equal(movements[0].reference_id, 'invoice-1');
 });
 
-test('covers CreateSalesInvoice -> ConfirmSalesInvoice -> event bus -> inventory OUT movement persistence', async () => {
+test('fans out sales.invoice.confirmed to multiple handlers with idempotent outcomes', async () => {
   const salesRepository = new InMemorySalesInvoiceRepository();
   const stockMovementRepository = new InMemoryStockMovementRepository();
+  const salesAuditProjectionHandler = new InMemorySalesAuditProjectionHandler();
   const eventEmitter = new EventEmitter2();
   const inventoryHandler = new SalesInvoiceConfirmedInventoryEventHandler(
     new CreateSalesInvoiceStockOutMovementsUseCase(),
@@ -118,6 +137,9 @@ test('covers CreateSalesInvoice -> ConfirmSalesInvoice -> event bus -> inventory
   );
 
   eventEmitter.on(SALES_INVOICE_CONFIRMED_EVENT, (payload) => inventoryHandler.handle(payload));
+  eventEmitter.on(SALES_INVOICE_CONFIRMED_EVENT, (payload) =>
+    salesAuditProjectionHandler.handle(payload),
+  );
 
   const createSalesInvoice = new CreateSalesInvoiceUseCase(salesRepository);
   const confirmSalesInvoice = new ConfirmSalesInvoiceUseCase(salesRepository, eventEmitter);
@@ -142,7 +164,11 @@ test('covers CreateSalesInvoice -> ConfirmSalesInvoice -> event bus -> inventory
   });
 
   const confirmed = await confirmSalesInvoice.execute({ invoice: draftInvoice });
+
+  await eventEmitter.emitAsync(SALES_INVOICE_CONFIRMED_EVENT, confirmed.events[0].payload);
+
   const persistedMovements = await stockMovementRepository.findByReference(confirmed.invoice.id);
+  const projectedInvoiceIds = salesAuditProjectionHandler.listProjectedInvoiceIds();
 
   assert.equal(confirmed.invoice.status, 'Confirmed');
   assert.equal(confirmed.events[0].name, SALES_INVOICE_CONFIRMED_EVENT);
@@ -153,6 +179,7 @@ test('covers CreateSalesInvoice -> ConfirmSalesInvoice -> event bus -> inventory
   assert.equal(persistedMovements[1].reference_type, SALES_INVOICE_CONFIRMED_EVENT);
   assert.equal(persistedMovements[0].reference_id, confirmed.invoice.id);
   assert.equal(persistedMovements[1].reference_id, confirmed.invoice.id);
+  assert.deepEqual(projectedInvoiceIds, [confirmed.invoice.id]);
 });
 
 test('throws for unsupported sales event name', async () => {

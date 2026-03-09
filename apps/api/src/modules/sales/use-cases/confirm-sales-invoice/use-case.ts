@@ -10,6 +10,7 @@ import {
   SALES_INVOICE_REPOSITORY,
   type ISalesInvoiceRepository,
 } from '../../infra/sales-invoice.repository';
+import { publishDomainEvents } from '../../../../shared/events/domain-event.publisher';
 import type { ConfirmSalesInvoiceDto } from './dto';
 
 export interface ConfirmSalesInvoiceResult {
@@ -37,7 +38,7 @@ export class ConfirmSalesInvoiceUseCase {
     const persistedInvoice = await this.salesInvoiceRepository.update(confirmedInvoice);
     const event = prepareSalesInvoiceConfirmedEvent(persistedInvoice);
 
-    await this.eventEmitter.emitAsync(event.name, event.payload);
+    await publishDomainEvents(this.eventEmitter, [event]);
 
     return {
       invoice: persistedInvoice,

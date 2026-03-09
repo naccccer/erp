@@ -1,10 +1,5 @@
 # Latest Phase Report
 
-- latest_phase: none
-- report_file: none
-
-When a phase is completed, replace this file content with:
-
-- latest_phase: <phase number>
-- report_file: `ai/phase-reports/phase-<number>.md`
-- short_summary: <1-2 lines>
+- latest_phase: 23.5
+- report_file: `ai/phase-reports/phase-23.5.md`
+- short_summary: Event orchestration is standardized with a shared DomainEvent + publisher helper, unified inventory handler pattern, and fan-out/idempotency tests.
