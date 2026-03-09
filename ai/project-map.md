@@ -141,7 +141,8 @@ Implemented:
 - `core/prisma-schema` (all core models and enums in `prisma/schema.prisma`)
 - `core/infra-repositories-event-bus` (sales + inventory Prisma repositories, Nest event bus wiring, and sales-confirmation -> inventory movement persistence loop)
 - `core/http-api` (sales, purchasing, finance-lite controllers and Nest HTTP bootstrap in `main.ts`)
+- `web/live-sales-visibility` (sales page now consumes API endpoints and shows stock movements from `GET /inventory/movements`)
 
 Next:
-- `Phase 23 - Early UI visibility: live sales -> inventory flow`
+- `Phase 24 - Event hardening`
 

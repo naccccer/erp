@@ -14,6 +14,12 @@ This module contains the frontend shell for the ERP web app.
 - expose confirm invoice action from UI
 - display resulting inventory stock movement from confirmation flow
 
+## Phase 23 scope
+- use live API endpoints instead of in-memory workflow
+- create/list/confirm sales invoices through Phase 22 backend routes
+- load inventory movements through `GET /inventory/movements?invoiceId=`
+- keep the sales flow Farsi-first with RTL layout
+
 Constraints:
 - reuse existing backend use-cases
 - no new backend business logic

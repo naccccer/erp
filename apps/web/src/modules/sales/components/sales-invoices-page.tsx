@@ -1,6 +1,15 @@
 import { revalidatePath } from 'next/cache';
 
-import { coreVisibilityWorkflow } from '../server/core-visibility-workflow';
+import {
+  confirmSalesInvoice,
+  createSalesInvoice,
+  listInventoryMovements,
+  listSalesInvoices,
+  type SalesInvoiceDto,
+  type StockMovementDto,
+} from '../server/sales-api';
+
+const DEFAULT_TENANT_ID = 'default';
 
 function readText(formData: FormData, key: string, fallback: string): string {
   const value = formData.get(key);
@@ -21,51 +30,75 @@ function readNumber(formData: FormData, key: string, fallback: number): number {
   return parsed;
 }
 
-function parseInvoiceDate(value: string): Date {
+function parseInvoiceDateToIso(value: string): string {
   const isoDate = `${value}T00:00:00.000Z`;
   const date = new Date(isoDate);
-  return Number.isNaN(date.getTime()) ? new Date() : date;
+  return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+}
+
+type SalesInvoiceView = {
+  invoice: SalesInvoiceDto;
+  stock_movements: StockMovementDto[];
+};
+
+async function loadInvoiceViews(tenantId: string): Promise<SalesInvoiceView[]> {
+  const invoices = await listSalesInvoices(tenantId);
+  const confirmedInvoices = invoices.filter((invoice) => invoice.status === 'Confirmed');
+  const movementEntries = await Promise.all(
+    confirmedInvoices.map(async (invoice) => [invoice.id, await listInventoryMovements(invoice.id)] as const),
+  );
+  const movementsByInvoiceId = new Map<string, StockMovementDto[]>(movementEntries);
+
+  return invoices.map((invoice) => ({
+    invoice,
+    stock_movements: movementsByInvoiceId.get(invoice.id) ?? [],
+  }));
 }
 
 async function createSalesInvoiceAction(formData: FormData): Promise<void> {
   'use server';
 
-  coreVisibilityWorkflow.createDraftSalesInvoice({
-    tenant_id: readText(formData, 'tenant_id', 'default'),
-    customer_id: readText(formData, 'customer_id', 'customer-1'),
-    invoice_date: parseInvoiceDate(
-      readText(formData, 'invoice_date', new Date().toISOString().slice(0, 10)),
-    ),
-    product_id: readText(formData, 'product_id', 'product-1'),
-    quantity: Math.max(1, readNumber(formData, 'quantity', 1)),
-    unit_price: Math.max(0, readNumber(formData, 'unit_price', 0)),
-    discount: Math.max(0, readNumber(formData, 'discount', 0)),
-  });
-
-  revalidatePath('/sales');
+  try {
+    await createSalesInvoice({
+      tenant_id: readText(formData, 'tenant_id', DEFAULT_TENANT_ID),
+      customer_id: readText(formData, 'customer_id', 'customer-1'),
+      invoice_date: parseInvoiceDateToIso(
+        readText(formData, 'invoice_date', new Date().toISOString().slice(0, 10)),
+      ),
+      items: [
+        {
+          product_id: readText(formData, 'product_id', 'product-1'),
+          quantity: Math.max(1, readNumber(formData, 'quantity', 1)),
+          unit_price: Math.max(0, readNumber(formData, 'unit_price', 0)),
+          discount: Math.max(0, readNumber(formData, 'discount', 0)),
+        },
+      ],
+    });
+  } finally {
+    revalidatePath('/sales');
+  }
 }
 
 async function confirmSalesInvoiceAction(formData: FormData): Promise<void> {
   'use server';
 
-  const invoiceId = readText(formData, 'invoice_id', '');
-  if (!invoiceId) {
+  const invoiceJson = readText(formData, 'invoice_json', '');
+  if (!invoiceJson) {
     return;
   }
 
   try {
-    coreVisibilityWorkflow.confirmDraftSalesInvoice({
-      invoice_id: invoiceId,
-    });
+    const invoice = JSON.parse(invoiceJson) as SalesInvoiceDto;
+    await confirmSalesInvoice(invoice);
   } catch {
     return;
+  } finally {
+    revalidatePath('/sales');
   }
-
-  revalidatePath('/sales');
 }
 
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium' }).format(value);
+function formatDate(value: string): string {
+  return new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium' }).format(new Date(value));
 }
 
 function formatNumber(value: number): string {
@@ -84,8 +117,16 @@ function statusLabel(status: string): string {
   return 'لغو شده';
 }
 
-export function SalesInvoicesPage() {
-  const invoiceViews = coreVisibilityWorkflow.listInvoiceViews();
+export async function SalesInvoicesPage() {
+  let invoiceViews: SalesInvoiceView[] = [];
+  let hasDataError = false;
+
+  try {
+    invoiceViews = await loadInvoiceViews(DEFAULT_TENANT_ID);
+  } catch {
+    hasDataError = true;
+  }
+
   const confirmedInvoiceViews = invoiceViews.filter(
     (invoiceView) => invoiceView.invoice.status === 'Confirmed',
   );
@@ -101,6 +142,12 @@ export function SalesInvoicesPage() {
         </p>
       </header>
 
+      {hasDataError ? (
+        <section className="sales-card" aria-live="polite">
+          <p className="sales-empty">اتصال به API برقرار نشد. لطفا سرویس API را اجرا کنید.</p>
+        </section>
+      ) : null}
+
       <section className="sales-card" aria-labelledby="sales-create-title">
         <h2 id="sales-create-title" className="sales-card__title">
           ایجاد پیش نویس فاکتور
@@ -109,7 +156,7 @@ export function SalesInvoicesPage() {
         <form action={createSalesInvoiceAction} className="sales-form">
           <label className="sales-field">
             <span>شناسه مستاجر</span>
-            <input name="tenant_id" defaultValue="default" required />
+            <input name="tenant_id" defaultValue={DEFAULT_TENANT_ID} required />
           </label>
 
           <label className="sales-field">
@@ -185,7 +232,11 @@ export function SalesInvoicesPage() {
                     <td>{statusLabel(invoiceView.invoice.status)}</td>
                     <td>
                       <form action={confirmSalesInvoiceAction}>
-                        <input type="hidden" name="invoice_id" value={invoiceView.invoice.id} />
+                        <input
+                          type="hidden"
+                          name="invoice_json"
+                          value={JSON.stringify(invoiceView.invoice)}
+                        />
                         <button
                           type="submit"
                           className="sales-button sales-button--secondary"
@@ -226,8 +277,9 @@ export function SalesInvoicesPage() {
                   <ul className="sales-movement-item__rows">
                     {invoiceView.stock_movements.map((movement) => (
                       <li key={movement.id}>
-                        نوع: {movement.movement_type} | کالا: <span dir="ltr">{movement.product_id}</span>{' '}
-                        | تعداد: {formatNumber(movement.quantity)} | انبار:{' '}
+                        نوع: {movement.movement_type} | کالا:{' '}
+                        <span dir="ltr">{movement.product_id}</span> | تعداد:{' '}
+                        {formatNumber(movement.quantity)} | انبار:{' '}
                         <span dir="ltr">{movement.warehouse_id}</span>
                       </li>
                     ))}

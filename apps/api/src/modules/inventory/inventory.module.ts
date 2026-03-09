@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { InventoryMovementsController } from './api/inventory-movements.controller.ts';
 import { PurchasingInvoiceConfirmedInventoryEventHandler } from './contract/purchasing-invoice-confirmed.handler.ts';
 import { SalesInvoiceConfirmedInventoryEventHandler } from './contract/sales-invoice-confirmed.handler.ts';
 import { PrismaStockMovementRepository } from './infra/prisma-stock-movement.repository.ts';
@@ -10,6 +11,7 @@ import { CreatePurchaseInvoiceStockInMovementsUseCase } from './use-cases/create
 import { CreateSalesInvoiceStockOutMovementsUseCase } from './use-cases/create-sales-invoice-stock-out-movements/use-case.ts';
 
 @Module({
+  controllers: [InventoryMovementsController],
   providers: [
     PrismaStockMovementRepository,
     PrismaWarehouseRepository,
