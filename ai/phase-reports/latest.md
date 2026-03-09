@@ -1,5 +1,5 @@
 # Latest Phase Report
 
-- latest_phase: 23.5
-- report_file: `ai/phase-reports/phase-23.5.md`
-- short_summary: Event orchestration is standardized with a shared DomainEvent + publisher helper, unified inventory handler pattern, and fan-out/idempotency tests.
+- latest_phase: 24
+- report_file: `ai/phase-reports/phase-24.md`
+- short_summary: Event publication now isolates failures per listener with structured per-handler logs, duplicate sales delivery is covered by tests, and event ownership docs are updated.

@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
 import {
@@ -34,6 +34,8 @@ export const PURCHASING_INVOICE_CONFIRMED_HANDLER_REGISTRATION =
 
 @Injectable()
 export class PurchasingInvoiceConfirmedInventoryEventHandler {
+  private readonly logger = new Logger(PurchasingInvoiceConfirmedInventoryEventHandler.name);
+
   constructor(
     private readonly useCase: CreatePurchaseInvoiceStockInMovementsUseCase,
     @Inject(STOCK_MOVEMENT_REPOSITORY)
@@ -54,15 +56,43 @@ export class PurchasingInvoiceConfirmedInventoryEventHandler {
 
   @OnEvent(PURCHASING_INVOICE_CONFIRMED_HANDLER_REGISTRATION.eventName)
   async handle(event: PurchasingInvoiceConfirmedEventPayloadContract): Promise<StockMovement[]> {
-    const warehouse = await this.warehouseRepository.findDefaultByTenantId(event.tenant_id);
+    const payloadSummary = this.buildPayloadSummary(event);
 
-    if (!warehouse) {
-      throw new Error(
-        `No active warehouse found for tenant "${event.tenant_id}" while handling purchasing.invoice.confirmed.`,
+    try {
+      const warehouse = await this.warehouseRepository.findDefaultByTenantId(event.tenant_id);
+
+      if (!warehouse) {
+        throw new Error(
+          `No active warehouse found for tenant "${event.tenant_id}" while handling purchasing.invoice.confirmed.`,
+        );
+      }
+
+      const movements = await this.createAndPersistMovements(event, warehouse.id);
+
+      this.logger.log(
+        JSON.stringify({
+          event_name: PURCHASING_INVOICE_CONFIRMED_HANDLER_REGISTRATION.eventName,
+          payload_summary: payloadSummary,
+          handler_name: PurchasingInvoiceConfirmedInventoryEventHandler.name,
+          handler_outcome: 'success',
+          movement_count: movements.length,
+        }),
       );
-    }
 
-    return this.createAndPersistMovements(event, warehouse.id);
+      return movements;
+    } catch (error: unknown) {
+      this.logger.error(
+        JSON.stringify({
+          event_name: PURCHASING_INVOICE_CONFIRMED_HANDLER_REGISTRATION.eventName,
+          payload_summary: payloadSummary,
+          handler_name: PurchasingInvoiceConfirmedInventoryEventHandler.name,
+          handler_outcome: 'failure',
+          error_message: error instanceof Error ? error.message : String(error),
+        }),
+      );
+
+      return [];
+    }
   }
 
   private async createAndPersistMovements(
@@ -83,5 +113,15 @@ export class PurchasingInvoiceConfirmedInventoryEventHandler {
         return this.stockMovementRepository.createMany(movements);
       },
     });
+  }
+
+  private buildPayloadSummary(
+    event: PurchasingInvoiceConfirmedEventPayloadContract,
+  ): Record<string, unknown> {
+    return {
+      tenant_id: event.tenant_id,
+      invoice_id: event.invoice_id,
+      item_count: event.items.length,
+    };
   }
 }

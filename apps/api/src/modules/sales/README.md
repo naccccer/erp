@@ -70,6 +70,7 @@ Current behavior:
 - `ConfirmSalesInvoiceUseCase` prepares this event through `contract/sales.events.ts`
 - The prepared event payload contains tenant, invoice, and item data for downstream modules
 - The event is emitted through the shared `publishDomainEvents` helper and Nest `EventEmitter2`
+- The shared publisher contains handler errors and logs structured event outcome records so confirmation HTTP flow stays deterministic
 - Event names are centralized in `packages/contracts/src/events/sales.events.ts`
 - Event contract shape follows `packages/contracts/src/events/domain-event.ts`
 

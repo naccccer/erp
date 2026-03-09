@@ -182,6 +182,51 @@ test('fans out sales.invoice.confirmed to multiple handlers with idempotent outc
   assert.deepEqual(projectedInvoiceIds, [confirmed.invoice.id]);
 });
 
+
+
+test('absorbs duplicate sales.invoice.confirmed delivery without duplicate stock movements', async () => {
+  const stockMovementRepository = new InMemoryStockMovementRepository();
+  const handler = new SalesInvoiceConfirmedInventoryEventHandler(
+    new CreateSalesInvoiceStockOutMovementsUseCase(),
+    stockMovementRepository,
+    warehouseRepository,
+  );
+
+  const event: SalesInvoiceConfirmedEventContract = {
+    name: SALES_INVOICE_CONFIRMED_EVENT,
+    payload: {
+      tenant_id: 'tenant-1',
+      invoice_id: 'invoice-duplicate-1',
+      customer_id: 'customer-1',
+      invoice_date: new Date('2026-03-06T08:00:00.000Z'),
+      total_amount: 100,
+      items: [
+        {
+          product_id: 'product-1',
+          quantity: 1,
+          unit_price: 100,
+          discount: 0,
+          line_total: 100,
+        },
+      ],
+    },
+  };
+
+  const first = await handler.execute({
+    event,
+    warehouse_id: 'warehouse-1',
+  });
+  const duplicate = await handler.execute({
+    event,
+    warehouse_id: 'warehouse-1',
+  });
+  const persisted = await stockMovementRepository.findByReference('invoice-duplicate-1');
+
+  assert.equal(first.length, 1);
+  assert.equal(duplicate.length, 1);
+  assert.equal(persisted.length, 1);
+});
+
 test('throws for unsupported sales event name', async () => {
   const stockMovementRepository = new InMemoryStockMovementRepository();
   const handler = new SalesInvoiceConfirmedInventoryEventHandler(

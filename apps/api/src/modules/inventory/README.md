@@ -44,3 +44,9 @@ It owns:
   - `CreatePurchaseInvoiceStockInMovementsUseCase`
   - `SalesInvoiceConfirmedInventoryEventHandler`
   - `PurchasingInvoiceConfirmedInventoryEventHandler`
+
+## Event Hardening (Phase 24)
+- Duplicate delivery is absorbed by idempotency checks on `reference_id` + event name + tenant scope before persisting.
+- Publisher-side failures are isolated per listener, so one failing consumer does not block other listeners.
+- Publisher logs are structured with `event_name`, `payload_summary`, `handler_index`, and `handler_outcome`.
+- Inventory handlers also emit structured success/failure logs with `handler_name` and payload summary fields.

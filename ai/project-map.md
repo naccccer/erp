@@ -116,8 +116,16 @@ Owns:
 - Handlers must be idempotent and order-independent.
 
 ### Event ownership table
-- `sales.invoice.confirmed` -> emitter: sales -> consumers: inventory (implemented), finance-lite (planned)
-- `purchasing.invoice.confirmed` -> emitter: purchasing -> consumers: inventory (implemented)
+| event name | emitting module | consuming module(s) |
+| --- | --- | --- |
+| `sales.invoice.confirmed` | `sales` | `inventory` (implemented), `finance-lite` (planned) |
+| `purchasing.invoice.confirmed` | `purchasing` | `inventory` (implemented) |
+
+## Event runtime policy (Phase 24 hardening)
+- Publisher-side error containment keeps consumer failures isolated from originating HTTP requests.
+- Handler execution is isolated per listener so one failing consumer does not block other consumers.
+- Structured logs include `event_name`, `payload_summary`, `handler_index`, and `handler_outcome`.
+- Inventory handlers also log per-handler success/failure with payload summaries to improve traceability.
 
 ## Shared contracts
 Stored in `packages/contracts`:
@@ -154,7 +162,7 @@ Implemented:
 - `core/infra-repositories-event-bus` (sales + inventory Prisma repositories, Nest event bus wiring, and sales-confirmation -> inventory movement persistence loop)
 - `core/http-api` (sales, purchasing, finance-lite controllers and Nest HTTP bootstrap in `main.ts`)
 - `web/live-sales-visibility` (sales page now consumes API endpoints and shows stock movements from `GET /inventory/movements`)
+- `event-hardening` (publisher-level listener isolation, structured event logs, and duplicate delivery coverage)
 
 Next:
-- `Phase 24 - Event hardening`
-
+- `Phase 25 - Inventory negative-stock guard`

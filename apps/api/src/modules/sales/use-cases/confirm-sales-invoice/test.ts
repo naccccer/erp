@@ -39,13 +39,17 @@ function makeInvoice(status: SalesInvoice['status']): SalesInvoice {
   };
 }
 
-test('confirms a draft sales invoice, persists it, and emits sales.invoice.confirmed', async () => {
-  const repository: ISalesInvoiceRepository = {
+function makeRepository(): ISalesInvoiceRepository {
+  return {
     create: async (invoice: SalesInvoice) => invoice,
     update: async (invoice: SalesInvoice) => invoice,
     findById: async () => null,
     listByTenant: async () => [],
   };
+}
+
+test('confirms a draft sales invoice, persists it, and emits sales.invoice.confirmed', async () => {
+  const repository = makeRepository();
   const eventEmitter = new EventEmitter2();
   let emittedEventName = '';
   let emittedPayloadInvoiceId = '';
@@ -56,7 +60,6 @@ test('confirms a draft sales invoice, persists it, and emits sales.invoice.confi
   });
 
   const useCase = new ConfirmSalesInvoiceUseCase(repository, eventEmitter);
-
   const result = await useCase.execute({ invoice: makeInvoice('Draft') });
 
   assert.equal(result.invoice.status, 'Confirmed');
@@ -71,13 +74,29 @@ test('confirms a draft sales invoice, persists it, and emits sales.invoice.confi
   assert.equal(emittedPayloadInvoiceId, 'invoice-1');
 });
 
+test('does not crash the caller when one event handler fails', async () => {
+  const repository = makeRepository();
+  const eventEmitter = new EventEmitter2();
+  let successfulHandlerCount = 0;
+
+  eventEmitter.on('sales.invoice.confirmed', async () => {
+    throw new Error('simulated-handler-failure');
+  });
+  eventEmitter.on('sales.invoice.confirmed', () => {
+    successfulHandlerCount += 1;
+  });
+
+  const useCase = new ConfirmSalesInvoiceUseCase(repository, eventEmitter);
+  const result = await useCase.execute({ invoice: makeInvoice('Draft') });
+
+  assert.equal(result.invoice.status, 'Confirmed');
+  assert.equal(result.events.length, 1);
+  assert.equal(result.events[0].name, 'sales.invoice.confirmed');
+  assert.equal(successfulHandlerCount, 1);
+});
+
 test('throws when invoice is already confirmed', async () => {
-  const repository: ISalesInvoiceRepository = {
-    create: async (invoice: SalesInvoice) => invoice,
-    update: async (invoice: SalesInvoice) => invoice,
-    findById: async () => null,
-    listByTenant: async () => [],
-  };
+  const repository = makeRepository();
   const useCase = new ConfirmSalesInvoiceUseCase(repository, new EventEmitter2());
 
   await assert.rejects(
@@ -87,12 +106,7 @@ test('throws when invoice is already confirmed', async () => {
 });
 
 test('throws when invoice is cancelled', async () => {
-  const repository: ISalesInvoiceRepository = {
-    create: async (invoice: SalesInvoice) => invoice,
-    update: async (invoice: SalesInvoice) => invoice,
-    findById: async () => null,
-    listByTenant: async () => [],
-  };
+  const repository = makeRepository();
   const useCase = new ConfirmSalesInvoiceUseCase(repository, new EventEmitter2());
 
   await assert.rejects(
