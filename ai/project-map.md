@@ -127,6 +127,11 @@ Owns:
 - Structured logs include `event_name`, `payload_summary`, `handler_index`, and `handler_outcome`.
 - Inventory handlers also log per-handler success/failure with payload summaries to improve traceability.
 
+## Inventory stock invariant (Phase 25)
+- Sales stock-out generation checks available quantity before each `OUT` movement.
+- Available quantity is derived from `StockMovement` aggregate totals (`IN` minus `OUT`) in inventory infra.
+- `InsufficientStockError` blocks stock-out persistence when requested quantity is greater than available quantity.
+
 ## Shared contracts
 Stored in `packages/contracts`:
 - event names
@@ -163,6 +168,7 @@ Implemented:
 - `core/http-api` (sales, purchasing, finance-lite controllers and Nest HTTP bootstrap in `main.ts`)
 - `web/live-sales-visibility` (sales page now consumes API endpoints and shows stock movements from `GET /inventory/movements`)
 - `event-hardening` (publisher-level listener isolation, structured event logs, and duplicate delivery coverage)
+- `inventory/negative-stock-guard` (sales stock-out rejects insufficient quantity before creating `OUT` movements)
 
 Next:
-- `Phase 25 - Inventory negative-stock guard`
+- `Phase 26 - Permission expansion`

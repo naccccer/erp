@@ -50,3 +50,8 @@ It owns:
 - Publisher-side failures are isolated per listener, so one failing consumer does not block other listeners.
 - Publisher logs are structured with `event_name`, `payload_summary`, `handler_index`, and `handler_outcome`.
 - Inventory handlers also emit structured success/failure logs with `handler_name` and payload summary fields.
+
+## Negative Stock Guard (Phase 25)
+- `CreateSalesInvoiceStockOutMovementsUseCase` queries available stock from inventory infra before creating each `OUT` movement.
+- Available stock is calculated from `StockMovement` aggregates (`IN` - `OUT`), with no separate balance table.
+- If requested quantity exceeds available quantity, `InsufficientStockError` is thrown and no new movements are persisted for that sales confirmation attempt.

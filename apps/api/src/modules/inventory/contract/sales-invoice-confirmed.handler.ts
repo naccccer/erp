@@ -105,7 +105,7 @@ export class SalesInvoiceConfirmedInventoryEventHandler {
       tenantId: event.tenant_id,
       stockMovementRepository: this.stockMovementRepository,
       persist: async () => {
-        const movements = this.useCase.execute({
+        const movements = await this.useCase.execute({
           warehouse_id: warehouseId,
           payload: event,
         });

@@ -45,6 +45,26 @@ export class PrismaStockMovementRepository implements IStockMovementRepository {
     return movements.map((movement) => this.toDomain(movement));
   }
 
+  async getAvailableStock(warehouseId: string, productId: string): Promise<number> {
+    const movementTotals = await this.getPrisma().stockMovement.groupBy({
+      by: ['movement_type'],
+      where: {
+        warehouse_id: warehouseId,
+        product_id: productId,
+      },
+      _sum: {
+        quantity: true,
+      },
+    });
+
+    return movementTotals.reduce((availableStock, movementTotal) => {
+      const quantity = Math.abs(movementTotal._sum.quantity ?? 0);
+      return movementTotal.movement_type === 'IN'
+        ? availableStock + quantity
+        : availableStock - quantity;
+    }, 0);
+  }
+
   private toDomain(movement: {
     id: string;
     tenant_id: string;

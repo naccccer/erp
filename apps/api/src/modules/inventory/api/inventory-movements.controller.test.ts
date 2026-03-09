@@ -21,6 +21,7 @@ test('returns stock movements by invoiceId', async () => {
         reference_id: 'invoice-1',
       },
     ],
+    getAvailableStock: async () => 0,
   };
 
   const controller = new InventoryMovementsController(repository);
@@ -34,6 +35,7 @@ test('throws when invoiceId query is missing', async () => {
   const repository: IStockMovementRepository = {
     createMany: async (movements) => movements,
     findByReference: async () => [],
+    getAvailableStock: async () => 0,
   };
 
   const controller = new InventoryMovementsController(repository);

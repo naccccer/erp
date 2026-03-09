@@ -24,6 +24,10 @@ class InMemoryStockMovementRepository implements IStockMovementRepository {
   async findByReference(referenceId: string): Promise<StockMovement[]> {
     return this.movements.filter((movement) => movement.reference_id === referenceId);
   }
+
+  async getAvailableStock(_warehouseId: string, _productId: string): Promise<number> {
+    return 0;
+  }
 }
 
 const warehouseRepository: IWarehouseRepository = {

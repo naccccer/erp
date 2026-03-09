@@ -43,6 +43,11 @@ class InMemorySalesInvoiceRepository implements ISalesInvoiceRepository {
 
 class InMemoryStockMovementRepository implements IStockMovementRepository {
   private readonly movements: StockMovement[] = [];
+  private readonly availableStockByProduct: Record<string, number>;
+
+  constructor(availableStockByProduct: Record<string, number> = {}) {
+    this.availableStockByProduct = availableStockByProduct;
+  }
 
   async createMany(movements: StockMovement[]): Promise<StockMovement[]> {
     this.movements.push(...movements);
@@ -51,6 +56,20 @@ class InMemoryStockMovementRepository implements IStockMovementRepository {
 
   async findByReference(referenceId: string): Promise<StockMovement[]> {
     return this.movements.filter((movement) => movement.reference_id === referenceId);
+  }
+
+  async getAvailableStock(warehouseId: string, productId: string): Promise<number> {
+    const baseStock = this.availableStockByProduct[productId] ?? 0;
+
+    const movementBalance = this.movements
+      .filter((movement) => movement.warehouse_id === warehouseId && movement.product_id === productId)
+      .reduce((current, movement) => {
+        return movement.movement_type === 'IN'
+          ? current + movement.quantity
+          : current - movement.quantity;
+      }, 0);
+
+    return baseStock + movementBalance;
   }
 }
 
@@ -83,9 +102,11 @@ const warehouseRepository: IWarehouseRepository = {
 };
 
 test('reacts to sales.invoice.confirmed and creates OUT stock movements', async () => {
-  const stockMovementRepository = new InMemoryStockMovementRepository();
+  const stockMovementRepository = new InMemoryStockMovementRepository({
+    'product-1': 10,
+  });
   const handler = new SalesInvoiceConfirmedInventoryEventHandler(
-    new CreateSalesInvoiceStockOutMovementsUseCase(),
+    new CreateSalesInvoiceStockOutMovementsUseCase(stockMovementRepository),
     stockMovementRepository,
     warehouseRepository,
   );
@@ -127,11 +148,14 @@ test('reacts to sales.invoice.confirmed and creates OUT stock movements', async 
 
 test('fans out sales.invoice.confirmed to multiple handlers with idempotent outcomes', async () => {
   const salesRepository = new InMemorySalesInvoiceRepository();
-  const stockMovementRepository = new InMemoryStockMovementRepository();
+  const stockMovementRepository = new InMemoryStockMovementRepository({
+    'product-1': 10,
+    'product-2': 10,
+  });
   const salesAuditProjectionHandler = new InMemorySalesAuditProjectionHandler();
   const eventEmitter = new EventEmitter2();
   const inventoryHandler = new SalesInvoiceConfirmedInventoryEventHandler(
-    new CreateSalesInvoiceStockOutMovementsUseCase(),
+    new CreateSalesInvoiceStockOutMovementsUseCase(stockMovementRepository),
     stockMovementRepository,
     warehouseRepository,
   );
@@ -185,9 +209,11 @@ test('fans out sales.invoice.confirmed to multiple handlers with idempotent outc
 
 
 test('absorbs duplicate sales.invoice.confirmed delivery without duplicate stock movements', async () => {
-  const stockMovementRepository = new InMemoryStockMovementRepository();
+  const stockMovementRepository = new InMemoryStockMovementRepository({
+    'product-1': 10,
+  });
   const handler = new SalesInvoiceConfirmedInventoryEventHandler(
-    new CreateSalesInvoiceStockOutMovementsUseCase(),
+    new CreateSalesInvoiceStockOutMovementsUseCase(stockMovementRepository),
     stockMovementRepository,
     warehouseRepository,
   );
@@ -228,9 +254,11 @@ test('absorbs duplicate sales.invoice.confirmed delivery without duplicate stock
 });
 
 test('throws for unsupported sales event name', async () => {
-  const stockMovementRepository = new InMemoryStockMovementRepository();
+  const stockMovementRepository = new InMemoryStockMovementRepository({
+    'product-1': 10,
+  });
   const handler = new SalesInvoiceConfirmedInventoryEventHandler(
-    new CreateSalesInvoiceStockOutMovementsUseCase(),
+    new CreateSalesInvoiceStockOutMovementsUseCase(stockMovementRepository),
     stockMovementRepository,
     warehouseRepository,
   );

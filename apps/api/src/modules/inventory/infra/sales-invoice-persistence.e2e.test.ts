@@ -38,6 +38,19 @@ test(
           is_active: true,
         },
       });
+      await prisma.stockMovement.create({
+        data: {
+          id: `seed-in-${randomUUID()}`,
+          tenant_id: tenantId,
+          warehouse_id: warehouseId,
+          product_id: 'product-e2e-1',
+          movement_type: 'IN',
+          quantity: 10,
+          occurred_at: new Date('2026-03-08T09:00:00.000Z'),
+          reference_type: 'inventory.seed',
+          reference_id: `seed-${tenantId}`,
+        },
+      });
 
       const createSalesInvoice = app.get(CreateSalesInvoiceUseCase);
       const confirmSalesInvoice = app.get(ConfirmSalesInvoiceUseCase);
