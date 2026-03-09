@@ -15,6 +15,13 @@ Do not scan unrelated modules unless contracts/events require it.
 
 ---
 
+## Roadmap Lifecycle
+- `ai/roadmap.md` contains active phases only.
+- `ai/roadmap-history.md` contains compact archived phases.
+- `ai/phase-reports/*` contains detailed execution evidence per completed phase.
+
+---
+
 ## auth
 Path:
 - `apps/api/src/modules/auth`
