@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 
 import { NestFactory } from '@nestjs/core';
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 import { SALES_INVOICE_CONFIRMED_EVENT } from '../../../../../../packages/contracts/src/events/sales.events.ts';
 import { AppModule } from '../../../app.module';
@@ -16,7 +17,9 @@ test(
   'persists sales invoice confirmation and creates stock movement through event bus',
   { skip: !hasDatabaseUrl },
   async () => {
-    const prisma = new PrismaClient();
+    const prisma = new PrismaClient({
+      adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),
+    });
     const tenantId = `tenant-e2e-${randomUUID()}`;
     const warehouseId = `warehouse-e2e-${randomUUID()}`;
     const app = await NestFactory.createApplicationContext(AppModule, {

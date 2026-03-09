@@ -1,17 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaClient, type MovementType } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 import type { StockMovement, StockMovementType } from '../entities/stock-movement.entity.ts';
 import type { IStockMovementRepository } from './stock-movement.repository.ts';
 
 @Injectable()
 export class PrismaStockMovementRepository implements IStockMovementRepository {
-  constructor(private readonly prisma: PrismaClient = new PrismaClient()) {}
+  private prisma: PrismaClient | null = null;
 
   async createMany(movements: StockMovement[]): Promise<StockMovement[]> {
-    const created = await this.prisma.$transaction(
+    const prisma = this.getPrisma();
+    const created = await prisma.$transaction(
       movements.map((movement) =>
-        this.prisma.stockMovement.create({
+        prisma.stockMovement.create({
           data: {
             id: movement.id,
             tenant_id: movement.tenant_id,
@@ -31,7 +33,7 @@ export class PrismaStockMovementRepository implements IStockMovementRepository {
   }
 
   async findByReference(referenceId: string): Promise<StockMovement[]> {
-    const movements = await this.prisma.stockMovement.findMany({
+    const movements = await this.getPrisma().stockMovement.findMany({
       where: {
         reference_id: referenceId,
       },
@@ -65,5 +67,20 @@ export class PrismaStockMovementRepository implements IStockMovementRepository {
       reference_type: movement.reference_type ?? undefined,
       reference_id: movement.reference_id ?? undefined,
     };
+  }
+
+  private getPrisma(): PrismaClient {
+    if (!this.prisma) {
+      const connectionString = process.env.DATABASE_URL;
+      if (!connectionString) {
+        throw new Error('DATABASE_URL is not set.');
+      }
+
+      this.prisma = new PrismaClient({
+        adapter: new PrismaPg({ connectionString }),
+      });
+    }
+
+    return this.prisma;
   }
 }

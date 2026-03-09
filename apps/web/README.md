@@ -30,3 +30,4 @@ Constraints:
 - UI is modular and local to `apps/web/src/modules/*`
 - no business logic is implemented in this phase
 - UI baseline is Farsi-first with RTL direction by default
+- Sales page reads API base URL from `API_BASE_URL` (default: `http://localhost:3001`)

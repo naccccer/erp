@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaClient, type InvoiceStatus } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 import type { SalesInvoiceItem } from '../entities/sales-invoice-item.entity';
 import type { SalesInvoice, SalesInvoiceStatus } from '../entities/sales-invoice.entity';
@@ -7,10 +8,10 @@ import type { ISalesInvoiceRepository } from './sales-invoice.repository';
 
 @Injectable()
 export class PrismaSalesInvoiceRepository implements ISalesInvoiceRepository {
-  constructor(private readonly prisma: PrismaClient = new PrismaClient()) {}
+  private prisma: PrismaClient | null = null;
 
   async create(invoice: SalesInvoice): Promise<SalesInvoice> {
-    const created = await this.prisma.salesInvoice.create({
+    const created = await this.getPrisma().salesInvoice.create({
       data: {
         id: invoice.id,
         tenant_id: invoice.tenant_id,
@@ -39,7 +40,7 @@ export class PrismaSalesInvoiceRepository implements ISalesInvoiceRepository {
   }
 
   async update(invoice: SalesInvoice): Promise<SalesInvoice> {
-    const updated = await this.prisma.salesInvoice.update({
+    const updated = await this.getPrisma().salesInvoice.update({
       where: {
         id: invoice.id,
       },
@@ -55,7 +56,7 @@ export class PrismaSalesInvoiceRepository implements ISalesInvoiceRepository {
   }
 
   async findById(id: string): Promise<SalesInvoice | null> {
-    const invoice = await this.prisma.salesInvoice.findUnique({
+    const invoice = await this.getPrisma().salesInvoice.findUnique({
       where: { id },
       include: {
         items: true,
@@ -66,7 +67,7 @@ export class PrismaSalesInvoiceRepository implements ISalesInvoiceRepository {
   }
 
   async listByTenant(tenantId: string): Promise<SalesInvoice[]> {
-    const invoices = await this.prisma.salesInvoice.findMany({
+    const invoices = await this.getPrisma().salesInvoice.findMany({
       where: {
         tenant_id: tenantId,
       },
@@ -119,5 +120,20 @@ export class PrismaSalesInvoiceRepository implements ISalesInvoiceRepository {
       total_amount: invoice.total_amount,
       items,
     };
+  }
+
+  private getPrisma(): PrismaClient {
+    if (!this.prisma) {
+      const connectionString = process.env.DATABASE_URL;
+      if (!connectionString) {
+        throw new Error('DATABASE_URL is not set.');
+      }
+
+      this.prisma = new PrismaClient({
+        adapter: new PrismaPg({ connectionString }),
+      });
+    }
+
+    return this.prisma;
   }
 }

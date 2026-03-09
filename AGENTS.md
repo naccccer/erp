@@ -101,3 +101,15 @@ Before finishing any task:
 - no unrelated files changed
 - naming follows project conventions
 - tests were added or updated if behavior changed
+
+---
+
+# Phase Report Protocol
+
+After completing each roadmap phase, always update:
+
+- `ai/phase-reports/phase-<number>.md`
+- `ai/phase-reports/latest.md`
+
+Use `ai/phase-report-template.md` format.
+This is mandatory even when phases are executed in separate sessions.

@@ -38,3 +38,4 @@ Before finishing a task, confirm all of these:
 - project-map updated if module boundaries changed
 - contracts updated if events or public DTOs changed
 - documentation remains consistent with implementation
+- phase report updated in `ai/phase-reports/phase-<number>.md` and `ai/phase-reports/latest.md`
