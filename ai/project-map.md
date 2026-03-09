@@ -140,7 +140,8 @@ Implemented:
 - `api/bootstrap` (`apps/api/src/main.ts`, `apps/api/src/app.module.ts`, and provider wiring in sales, purchasing, inventory, finance-lite modules)
 - `core/prisma-schema` (all core models and enums in `prisma/schema.prisma`)
 - `core/infra-repositories-event-bus` (sales + inventory Prisma repositories, Nest event bus wiring, and sales-confirmation -> inventory movement persistence loop)
+- `core/http-api` (sales, purchasing, finance-lite controllers and Nest HTTP bootstrap in `main.ts`)
 
 Next:
-- `Phase 22 - Core HTTP API`
+- `Phase 23 - Early UI visibility: live sales -> inventory flow`
 

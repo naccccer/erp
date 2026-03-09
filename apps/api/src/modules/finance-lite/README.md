@@ -24,3 +24,6 @@ It does NOT manage:
 ## Nest Wiring (Phase 19)
 - `FinanceLiteModule` registers:
   - `RegisterPaymentUseCase`
+
+## HTTP API (Phase 22)
+- `POST /finance/payments` -> register payment record

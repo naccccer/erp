@@ -29,3 +29,7 @@ It does NOT manage:
 - `PurchasingModule` registers:
   - `CreatePurchaseInvoiceUseCase`
   - `ConfirmPurchaseInvoiceUseCase`
+
+## HTTP API (Phase 22)
+- `POST /purchasing/invoices` -> create draft purchase invoice
+- `POST /purchasing/invoices/:id/confirm` -> confirm draft purchase invoice

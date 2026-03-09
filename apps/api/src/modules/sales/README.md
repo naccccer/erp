@@ -137,6 +137,14 @@ Communication with those modules happens only through events.
 
 ---
 
+# HTTP API (Phase 22)
+
+- `POST /sales/invoices` -> create draft invoice
+- `POST /sales/invoices/:id/confirm` -> confirm draft invoice
+- `GET /sales/invoices?tenant_id=...` -> list tenant invoices
+
+---
+
 # Future Extensions
 
 Possible future features:
