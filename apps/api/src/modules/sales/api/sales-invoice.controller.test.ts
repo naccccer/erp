@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 
 import type { SalesInvoice } from '../entities/sales-invoice.entity';
 import type { ISalesInvoiceRepository } from '../infra/sales-invoice.repository';
@@ -34,7 +34,7 @@ test('creates invoice through CreateSalesInvoiceUseCase', async () => {
   const repository: ISalesInvoiceRepository = {
     create: async (invoice) => invoice,
     update: async (invoice) => invoice,
-    findById: async () => null,
+    findById: async (_id, _tenantId) => null,
     listByTenant: async () => [],
   };
   const controller = new SalesInvoiceController(createUseCase, confirmUseCase, repository);
@@ -63,7 +63,7 @@ test('confirms invoice through ConfirmSalesInvoiceUseCase', async () => {
   const repository: ISalesInvoiceRepository = {
     create: async (saved) => saved,
     update: async (saved) => saved,
-    findById: async () => null,
+    findById: async (_id, _tenantId) => null,
     listByTenant: async () => [],
   };
   const controller = new SalesInvoiceController(createUseCase, confirmUseCase, repository);
@@ -88,7 +88,7 @@ test('throws when confirm path id does not match invoice id', async () => {
   const repository: ISalesInvoiceRepository = {
     create: async (saved) => saved,
     update: async (saved) => saved,
-    findById: async () => null,
+    findById: async (_id, _tenantId) => null,
     listByTenant: async () => [],
   };
   const controller = new SalesInvoiceController(createUseCase, confirmUseCase, repository);
@@ -104,7 +104,7 @@ test('throws when confirm path id does not match invoice id', async () => {
   );
 });
 
-test('lists invoices by tenant_id query', async () => {
+test('lists invoices by tenant context', async () => {
   const createUseCase = {
     execute: async () => makeInvoice('invoice-created'),
   } as unknown as CreateSalesInvoiceUseCase;
@@ -117,18 +117,25 @@ test('lists invoices by tenant_id query', async () => {
   const repository: ISalesInvoiceRepository = {
     create: async (saved) => saved,
     update: async (saved) => saved,
-    findById: async () => null,
+    findById: async (_id, _tenantId) => null,
     listByTenant: async () => [makeInvoice('invoice-1')],
   };
   const controller = new SalesInvoiceController(createUseCase, confirmUseCase, repository);
 
-  const result = await controller.list('tenant-1');
+  const result = await controller.list({
+    tenant_context: {
+      user_id: 'user-1',
+      tenant_id: 'tenant-1',
+      role: 'sales',
+      permission_keys: ['sales.invoice.read'],
+    },
+  });
 
   assert.equal(result.length, 1);
   assert.equal(result[0].id, 'invoice-1');
 });
 
-test('throws when tenant_id query is missing', async () => {
+test('throws when tenant context is missing', async () => {
   const createUseCase = {
     execute: async () => makeInvoice('invoice-created'),
   } as unknown as CreateSalesInvoiceUseCase;
@@ -141,15 +148,15 @@ test('throws when tenant_id query is missing', async () => {
   const repository: ISalesInvoiceRepository = {
     create: async (saved) => saved,
     update: async (saved) => saved,
-    findById: async () => null,
+    findById: async (_id, _tenantId) => null,
     listByTenant: async () => [],
   };
   const controller = new SalesInvoiceController(createUseCase, confirmUseCase, repository);
 
   await assert.rejects(
-    () => controller.list(''),
+    () => controller.list({}),
     (error: unknown) =>
-      error instanceof BadRequestException &&
-      error.message === 'Query parameter "tenant_id" is required.',
+      error instanceof ForbiddenException
+      && error.message === 'Request header "x-tenant-id" is required.',
   );
 });

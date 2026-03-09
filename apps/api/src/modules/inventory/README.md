@@ -29,6 +29,10 @@ It owns:
 ## HTTP API (Phase 23)
 - `GET /inventory/movements?invoiceId=...` -> returns read-only stock movements linked to a confirmed invoice.
 
+## Permissions (Phase 26)
+- `GET /inventory/movements?invoiceId=...` requires `inventory.movement.read`.
+- Tenant scope is resolved from request context and enforced in repository queries.
+
 ## Stock Balance Strategy
 - `StockMovement` is append-only and represents every stock change.
 - `StockBalance` is a read model derived from movement aggregation.

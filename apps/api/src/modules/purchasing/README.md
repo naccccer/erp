@@ -33,3 +33,7 @@ It does NOT manage:
 ## HTTP API (Phase 22)
 - `POST /purchasing/invoices` -> create draft purchase invoice
 - `POST /purchasing/invoices/:id/confirm` -> confirm draft purchase invoice
+
+## Permissions (Phase 26)
+- `POST /purchasing/invoices` requires `purchasing.invoice.create`
+- `POST /purchasing/invoices/:id/confirm` requires `purchasing.invoice.confirm`

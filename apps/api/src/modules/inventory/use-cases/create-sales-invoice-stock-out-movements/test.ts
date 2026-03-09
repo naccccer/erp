@@ -11,8 +11,8 @@ function createStockMovementRepository(
 ): IStockMovementRepository {
   return {
     createMany: async (movements) => movements,
-    findByReference: async () => [],
-    getAvailableStock: async (_warehouseId, productId) => stockByProduct[productId] ?? 0,
+    findByReference: async (_tenantId, _referenceId) => [],
+    getAvailableStock: async (_tenantId, _warehouseId, productId) => stockByProduct[productId] ?? 0,
   };
 }
 

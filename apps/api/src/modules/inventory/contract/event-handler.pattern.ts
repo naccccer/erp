@@ -36,7 +36,10 @@ export interface StockMovementIdempotencyGuardInput {
 export async function withStockMovementIdempotencyGuard(
   input: StockMovementIdempotencyGuardInput,
 ): Promise<StockMovement[]> {
-  const existingMovements = await input.stockMovementRepository.findByReference(input.referenceId);
+  const existingMovements = await input.stockMovementRepository.findByReference(
+    input.tenantId,
+    input.referenceId,
+  );
   const existingEventMovements = existingMovements.filter(
     (movement) =>
       movement.reference_type === input.eventName && movement.tenant_id === input.tenantId,

@@ -6,9 +6,10 @@ import {
   Inject,
   Param,
   Post,
-  Query,
+  Req,
 } from '@nestjs/common';
 
+import { SALES_PERMISSIONS } from '../../../../../../packages/contracts/src/permissions/sales.permissions.ts';
 import type { ConfirmSalesInvoiceDto } from '../use-cases/confirm-sales-invoice/dto';
 import { ConfirmSalesInvoiceUseCase } from '../use-cases/confirm-sales-invoice/use-case';
 import type { CreateSalesInvoiceDto } from '../use-cases/create-sales-invoice/dto';
@@ -17,6 +18,11 @@ import {
   SALES_INVOICE_REPOSITORY,
   type ISalesInvoiceRepository,
 } from '../infra/sales-invoice.repository';
+import { RequirePermission } from '../../../shared/auth/require-permission.decorator.ts';
+import {
+  resolveTenantRequestContext,
+  type RequestWithTenantContext,
+} from '../../../shared/auth/request-context.ts';
 
 @Controller('sales/invoices')
 export class SalesInvoiceController {
@@ -27,11 +33,13 @@ export class SalesInvoiceController {
     private readonly salesInvoiceRepository: ISalesInvoiceRepository,
   ) {}
 
+  @RequirePermission(SALES_PERMISSIONS.INVOICE_CREATE)
   @Post()
   async create(@Body() body: CreateSalesInvoiceDto) {
     return this.createSalesInvoiceUseCase.execute(body);
   }
 
+  @RequirePermission(SALES_PERMISSIONS.INVOICE_CONFIRM)
   @Post(':id/confirm')
   async confirm(@Param('id') id: string, @Body() body: ConfirmSalesInvoiceDto) {
     if (body.invoice.id !== id) {
@@ -41,12 +49,11 @@ export class SalesInvoiceController {
     return this.confirmSalesInvoiceUseCase.execute(body);
   }
 
+  @RequirePermission(SALES_PERMISSIONS.INVOICE_READ)
   @Get()
-  async list(@Query('tenant_id') tenantId: string) {
-    if (!tenantId) {
-      throw new BadRequestException('Query parameter "tenant_id" is required.');
-    }
+  async list(@Req() request: RequestWithTenantContext) {
+    const tenantContext = resolveTenantRequestContext(request);
 
-    return this.salesInvoiceRepository.listByTenant(tenantId);
+    return this.salesInvoiceRepository.listByTenant(tenantContext.tenant_id);
   }
 }

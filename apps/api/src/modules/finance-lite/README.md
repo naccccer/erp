@@ -27,3 +27,6 @@ It does NOT manage:
 
 ## HTTP API (Phase 22)
 - `POST /finance/payments` -> register payment record
+
+## Permissions (Phase 26)
+- `POST /finance/payments` requires `finance.payment.create`

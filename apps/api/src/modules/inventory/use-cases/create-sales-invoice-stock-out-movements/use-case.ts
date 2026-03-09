@@ -25,7 +25,11 @@ export class CreateSalesInvoiceStockOutMovementsUseCase {
     for (const item of input.payload.items) {
       const currentAvailableStock =
         availableStockByProduct.get(item.product_id) ??
-        await this.stockMovementRepository.getAvailableStock(input.warehouse_id, item.product_id);
+        await this.stockMovementRepository.getAvailableStock(
+          input.payload.tenant_id,
+          input.warehouse_id,
+          item.product_id,
+        );
 
       if (item.quantity > currentAvailableStock) {
         throw new InsufficientStockError({

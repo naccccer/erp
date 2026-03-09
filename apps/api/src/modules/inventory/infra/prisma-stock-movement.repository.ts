@@ -32,9 +32,10 @@ export class PrismaStockMovementRepository implements IStockMovementRepository {
     return created.map((movement) => this.toDomain(movement));
   }
 
-  async findByReference(referenceId: string): Promise<StockMovement[]> {
+  async findByReference(tenantId: string, referenceId: string): Promise<StockMovement[]> {
     const movements = await this.getPrisma().stockMovement.findMany({
       where: {
+        tenant_id: tenantId,
         reference_id: referenceId,
       },
       orderBy: {
@@ -45,10 +46,15 @@ export class PrismaStockMovementRepository implements IStockMovementRepository {
     return movements.map((movement) => this.toDomain(movement));
   }
 
-  async getAvailableStock(warehouseId: string, productId: string): Promise<number> {
+  async getAvailableStock(
+    tenantId: string,
+    warehouseId: string,
+    productId: string,
+  ): Promise<number> {
     const movementTotals = await this.getPrisma().stockMovement.groupBy({
       by: ['movement_type'],
       where: {
+        tenant_id: tenantId,
         warehouse_id: warehouseId,
         product_id: productId,
       },

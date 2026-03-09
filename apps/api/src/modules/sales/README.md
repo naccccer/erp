@@ -149,7 +149,12 @@ Communication with those modules happens only through events.
 
 - `POST /sales/invoices` -> create draft invoice
 - `POST /sales/invoices/:id/confirm` -> confirm draft invoice
-- `GET /sales/invoices?tenant_id=...` -> list tenant invoices
+- `GET /sales/invoices` -> list tenant invoices from request tenant context
+
+## Permissions (Phase 26)
+- `POST /sales/invoices` requires `sales.invoice.create`
+- `POST /sales/invoices/:id/confirm` requires `sales.invoice.confirm`
+- `GET /sales/invoices` requires `sales.invoice.read`
 
 ---
 

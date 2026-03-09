@@ -43,7 +43,7 @@ function makeRepository(): ISalesInvoiceRepository {
   return {
     create: async (invoice: SalesInvoice) => invoice,
     update: async (invoice: SalesInvoice) => invoice,
-    findById: async () => null,
+    findById: async (_id, _tenantId) => null,
     listByTenant: async () => [],
   };
 }

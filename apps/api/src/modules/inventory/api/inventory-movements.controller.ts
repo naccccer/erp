@@ -1,4 +1,11 @@
-import { BadRequestException, Controller, Get, Inject, Query } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Inject, Query, Req } from '@nestjs/common';
+
+import { INVENTORY_PERMISSIONS } from '../../../../../../packages/contracts/src/permissions/inventory.permissions.ts';
+import { RequirePermission } from '../../../shared/auth/require-permission.decorator.ts';
+import {
+  resolveTenantRequestContext,
+  type RequestWithTenantContext,
+} from '../../../shared/auth/request-context.ts';
 
 import {
   STOCK_MOVEMENT_REPOSITORY,
@@ -12,12 +19,15 @@ export class InventoryMovementsController {
     private readonly stockMovementRepository: IStockMovementRepository,
   ) {}
 
+  @RequirePermission(INVENTORY_PERMISSIONS.MOVEMENT_READ)
   @Get('movements')
-  async list(@Query('invoiceId') invoiceId: string) {
+  async list(@Query('invoiceId') invoiceId: string, @Req() request: RequestWithTenantContext) {
     if (!invoiceId) {
       throw new BadRequestException('Query parameter "invoiceId" is required.');
     }
 
-    return this.stockMovementRepository.findByReference(invoiceId);
+    const tenantContext = resolveTenantRequestContext(request);
+
+    return this.stockMovementRepository.findByReference(tenantContext.tenant_id, invoiceId);
   }
 }

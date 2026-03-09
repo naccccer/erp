@@ -40,24 +40,47 @@ export class PrismaSalesInvoiceRepository implements ISalesInvoiceRepository {
   }
 
   async update(invoice: SalesInvoice): Promise<SalesInvoice> {
-    const updated = await this.getPrisma().salesInvoice.update({
+    const updatedRows = await this.getPrisma().salesInvoice.updateMany({
       where: {
         id: invoice.id,
+        tenant_id: invoice.tenant_id,
       },
       data: {
         status: invoice.status as InvoiceStatus,
+      },
+    });
+
+    if (updatedRows.count === 0) {
+      throw new Error(
+        `Sales invoice "${invoice.id}" was not found for tenant "${invoice.tenant_id}".`,
+      );
+    }
+
+    const updated = await this.getPrisma().salesInvoice.findFirst({
+      where: {
+        id: invoice.id,
+        tenant_id: invoice.tenant_id,
       },
       include: {
         items: true,
       },
     });
 
+    if (!updated) {
+      throw new Error(
+        `Sales invoice "${invoice.id}" was not found for tenant "${invoice.tenant_id}".`,
+      );
+    }
+
     return this.toDomain(updated);
   }
 
-  async findById(id: string): Promise<SalesInvoice | null> {
-    const invoice = await this.getPrisma().salesInvoice.findUnique({
-      where: { id },
+  async findById(id: string, tenantId: string): Promise<SalesInvoice | null> {
+    const invoice = await this.getPrisma().salesInvoice.findFirst({
+      where: {
+        id,
+        tenant_id: tenantId,
+      },
       include: {
         items: true,
       },

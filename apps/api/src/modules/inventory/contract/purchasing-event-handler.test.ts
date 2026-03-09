@@ -21,11 +21,17 @@ class InMemoryStockMovementRepository implements IStockMovementRepository {
     return movements;
   }
 
-  async findByReference(referenceId: string): Promise<StockMovement[]> {
-    return this.movements.filter((movement) => movement.reference_id === referenceId);
+  async findByReference(tenantId: string, referenceId: string): Promise<StockMovement[]> {
+    return this.movements.filter(
+      (movement) => movement.tenant_id === tenantId && movement.reference_id === referenceId,
+    );
   }
 
-  async getAvailableStock(_warehouseId: string, _productId: string): Promise<number> {
+  async getAvailableStock(
+    _tenantId: string,
+    _warehouseId: string,
+    _productId: string,
+  ): Promise<number> {
     return 0;
   }
 }
@@ -75,7 +81,7 @@ test('reacts to purchasing.invoice.confirmed and creates IN stock movements', as
     event,
     warehouse_id: 'warehouse-1',
   });
-  const persistedMovements = await stockMovementRepository.findByReference('purchase-1');
+  const persistedMovements = await stockMovementRepository.findByReference('tenant-1', 'purchase-1');
 
   assert.equal(movements.length, 1);
   assert.equal(duplicateDeliveryMovements.length, 1);

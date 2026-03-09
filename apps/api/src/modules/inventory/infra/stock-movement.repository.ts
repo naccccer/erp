@@ -4,6 +4,6 @@ export const STOCK_MOVEMENT_REPOSITORY = Symbol('IStockMovementRepository');
 
 export interface IStockMovementRepository {
   createMany(movements: StockMovement[]): Promise<StockMovement[]>;
-  findByReference(referenceId: string): Promise<StockMovement[]>;
-  getAvailableStock(warehouseId: string, productId: string): Promise<number>;
+  findByReference(tenantId: string, referenceId: string): Promise<StockMovement[]>;
+  getAvailableStock(tenantId: string, warehouseId: string, productId: string): Promise<number>;
 }

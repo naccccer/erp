@@ -32,7 +32,7 @@ class InMemorySalesInvoiceRepository implements ISalesInvoiceRepository {
     return invoice;
   }
 
-  async findById(id: string): Promise<SalesInvoice | null> {
+  async findById(id: string, _tenantId: string): Promise<SalesInvoice | null> {
     return this.invoices.get(id) ?? null;
   }
 
@@ -54,15 +54,24 @@ class InMemoryStockMovementRepository implements IStockMovementRepository {
     return movements;
   }
 
-  async findByReference(referenceId: string): Promise<StockMovement[]> {
-    return this.movements.filter((movement) => movement.reference_id === referenceId);
+  async findByReference(tenantId: string, referenceId: string): Promise<StockMovement[]> {
+    return this.movements.filter(
+      (movement) => movement.tenant_id === tenantId && movement.reference_id === referenceId,
+    );
   }
 
-  async getAvailableStock(warehouseId: string, productId: string): Promise<number> {
+  async getAvailableStock(
+    tenantId: string,
+    warehouseId: string,
+    productId: string,
+  ): Promise<number> {
     const baseStock = this.availableStockByProduct[productId] ?? 0;
 
     const movementBalance = this.movements
-      .filter((movement) => movement.warehouse_id === warehouseId && movement.product_id === productId)
+      .filter((movement) =>
+        movement.tenant_id === tenantId
+        && movement.warehouse_id === warehouseId
+        && movement.product_id === productId)
       .reduce((current, movement) => {
         return movement.movement_type === 'IN'
           ? current + movement.quantity
@@ -191,7 +200,10 @@ test('fans out sales.invoice.confirmed to multiple handlers with idempotent outc
 
   await eventEmitter.emitAsync(SALES_INVOICE_CONFIRMED_EVENT, confirmed.events[0].payload);
 
-  const persistedMovements = await stockMovementRepository.findByReference(confirmed.invoice.id);
+  const persistedMovements = await stockMovementRepository.findByReference(
+    'tenant-1',
+    confirmed.invoice.id,
+  );
   const projectedInvoiceIds = salesAuditProjectionHandler.listProjectedInvoiceIds();
 
   assert.equal(confirmed.invoice.status, 'Confirmed');
@@ -246,7 +258,7 @@ test('absorbs duplicate sales.invoice.confirmed delivery without duplicate stock
     event,
     warehouse_id: 'warehouse-1',
   });
-  const persisted = await stockMovementRepository.findByReference('invoice-duplicate-1');
+  const persisted = await stockMovementRepository.findByReference('tenant-1', 'invoice-duplicate-1');
 
   assert.equal(first.length, 1);
   assert.equal(duplicate.length, 1);

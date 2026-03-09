@@ -132,6 +132,11 @@ Owns:
 - Available quantity is derived from `StockMovement` aggregate totals (`IN` minus `OUT`) in inventory infra.
 - `InsufficientStockError` blocks stock-out persistence when requested quantity is greater than available quantity.
 
+## Access control policy (Phase 26)
+- HTTP endpoints use `@RequirePermission(...)` and `TenantPermissionGuard` as a cross-cutting enforcement layer.
+- Request context is currently header-based (`x-tenant-id`, `x-role`, optional `x-permissions`) pending JWT integration.
+- Repository queries are tenant-scoped so cross-tenant reads are blocked structurally at data-access boundaries.
+
 ## Shared contracts
 Stored in `packages/contracts`:
 - event names
@@ -145,6 +150,8 @@ Current shared contracts:
 - `packages/contracts/src/events/purchasing.events.ts`
 - `packages/contracts/src/permissions/sales.permissions.ts`
 - `packages/contracts/src/permissions/purchasing.permissions.ts`
+- `packages/contracts/src/permissions/inventory.permissions.ts`
+- `packages/contracts/src/permissions/finance.permissions.ts`
 
 ## Current implementation target status
 Implemented:
@@ -169,6 +176,7 @@ Implemented:
 - `web/live-sales-visibility` (sales page now consumes API endpoints and shows stock movements from `GET /inventory/movements`)
 - `event-hardening` (publisher-level listener isolation, structured event logs, and duplicate delivery coverage)
 - `inventory/negative-stock-guard` (sales stock-out rejects insufficient quantity before creating `OUT` movements)
+- `api/permission-expansion` (tenant permission guard + endpoint-level permission metadata + tenant-scoped repository queries)
 
 Next:
-- `Phase 26 - Permission expansion`
+- `Phase 27 - Purchasing + finance infra repositories`

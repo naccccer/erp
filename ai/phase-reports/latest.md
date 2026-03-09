@@ -1,5 +1,5 @@
 # Latest Phase Report
 
-- latest_phase: 25
-- report_file: `ai/phase-reports/phase-25.md`
-- short_summary: Inventory now enforces non-negative stock during sales stock-out creation using movement aggregates, with insufficient and sufficient stock paths both covered by tests.
+- latest_phase: 26
+- report_file: `ai/phase-reports/phase-26.md`
+- short_summary: Endpoint permissions are now enforced via TenantPermissionGuard with @RequirePermission metadata, and tenant-scoped filtering is applied at sales and inventory repository query boundaries.

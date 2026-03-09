@@ -9,7 +9,7 @@ test('creates a draft sales invoice, persists it, and calculates totals', async 
   const repository: ISalesInvoiceRepository = {
     create: async (invoice: SalesInvoice) => invoice,
     update: async (invoice: SalesInvoice) => invoice,
-    findById: async () => null,
+    findById: async (_id, _tenantId) => null,
     listByTenant: async () => [],
   };
   const useCase = new CreateSalesInvoiceUseCase(repository);

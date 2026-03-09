@@ -5,6 +5,6 @@ export const SALES_INVOICE_REPOSITORY = Symbol('ISalesInvoiceRepository');
 export interface ISalesInvoiceRepository {
   create(invoice: SalesInvoice): Promise<SalesInvoice>;
   update(invoice: SalesInvoice): Promise<SalesInvoice>;
-  findById(id: string): Promise<SalesInvoice | null>;
+  findById(id: string, tenantId: string): Promise<SalesInvoice | null>;
   listByTenant(tenantId: string): Promise<SalesInvoice[]>;
 }
