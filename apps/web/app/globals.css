@@ -295,6 +295,73 @@ a {
   color: var(--text-muted);
 }
 
+.sales-hint {
+  margin: 10px 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.sales-toolbar {
+  margin-bottom: 10px;
+}
+
+.sales-form--ops {
+  margin-bottom: 12px;
+}
+
+.sales-link-button {
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+  color: var(--text-main);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sales-table__row--selected td {
+  background: #eef5fc;
+}
+
+.sales-table__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.sales-table--compact {
+  min-width: 640px;
+}
+
+.sales-link {
+  color: #1f4f82;
+  font-size: 13px;
+  text-decoration: underline;
+}
+
+.sales-link--disabled {
+  color: #93a0ac;
+  text-decoration: none;
+  cursor: not-allowed;
+}
+
+.sales-pagination {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sales-pagination__summary {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
 .visibility-checkpoint {
   background: #f8fbff;
   border: 1px solid #b9d4ef;
@@ -419,6 +486,10 @@ a {
   }
 
   .sales-form .sales-button {
+    width: 100%;
+  }
+
+  .sales-link-button {
     width: 100%;
   }
 

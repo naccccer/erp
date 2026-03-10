@@ -55,6 +55,12 @@ This module contains the frontend shell for the ERP web app.
 - standardize checkpoint action status (`idle`, `success`, `error`) in page-local workflow state
 - tighten minimal responsive behavior for topbar/checkpoint/form actions on mobile
 
+## Phase 35 scope
+- upgrade sales page to an operations-first console (no backend contract change)
+- add list filters (`tenant`, invoice id, customer id, status), sorting, and pagination
+- add detail panel for selected invoice including invoice items and related inventory movements
+- keep stable Farsi states for list/error/empty and detail/error/empty conditions
+
 Constraints:
 - reuse existing backend use-cases
 - no new backend business logic

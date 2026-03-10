@@ -184,6 +184,7 @@ Implemented:
 - `phase-31/purchasing-visibility-workflow-page` (purchasing page now supports draft creation + confirmation through existing APIs and shows immediate inventory movement checkpoint for the confirmed purchase invoice)
 - `phase-32/finance-inventory-checkpoint-pages` (finance page now registers payments through existing API and shows response checkpoints; inventory page now performs tenant-aware movement lookup by reference/invoice ID with clear Farsi empty/error states)
 - `phase-33/ui-visibility-integration-pass` (sales/purchasing/inventory/finance now share a normalized checkpoint status pattern with explicit tenant context, while mobile shell/checkpoint/form behavior is tightened without backend/API contract changes)
+- `phase-35/sales-ops-console-v1` (sales page now includes tenant-aware filters, sorting, pagination, and a selected-invoice detail panel that shows invoice items plus related stock movements with stable loading/empty/error states)
 
 Next:
-- `Phase 34 - TBD`
+- `Phase 36 - Master data read readiness`

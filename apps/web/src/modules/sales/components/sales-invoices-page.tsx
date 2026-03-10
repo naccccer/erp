@@ -1,4 +1,4 @@
-﻿import { revalidatePath } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 
 import {
   confirmSalesInvoice,
@@ -8,6 +8,14 @@ import {
   type SalesInvoiceDto,
   type StockMovementDto,
 } from '../server/sales-api';
+import {
+  applySalesOpsList,
+  buildSalesOpsHref,
+  readSalesOpsQuery,
+  SALES_PAGE_SIZE_OPTIONS,
+  type SalesOpsQueryState,
+  type SalesOpsSearchParams,
+} from '../server/sales-ops-query';
 import { JalaliDateField } from '../../shared/components/jalali-date-field';
 import {
   VisibilityCheckpoint,
@@ -49,27 +57,6 @@ function parseInvoiceDateToIso(value: string): string {
 
   const dateOnly = new Date(`${trimmed}T00:00:00.000Z`);
   return Number.isNaN(dateOnly.getTime()) ? new Date().toISOString() : dateOnly.toISOString();
-}
-
-type SalesInvoiceView = {
-  invoice: SalesInvoiceDto;
-  stock_movements: StockMovementDto[];
-};
-
-async function loadInvoiceViews(tenantId: string): Promise<SalesInvoiceView[]> {
-  const invoices = await listSalesInvoices(tenantId);
-  const confirmedInvoices = invoices.filter((invoice) => invoice.status === 'Confirmed');
-  const movementEntries = await Promise.all(
-    confirmedInvoices.map(
-      async (invoice) => [invoice.id, await listInventoryMovements(invoice.id, tenantId)] as const,
-    ),
-  );
-  const movementsByInvoiceId = new Map<string, StockMovementDto[]>(movementEntries);
-
-  return invoices.map((invoice) => ({
-    invoice,
-    stock_movements: movementsByInvoiceId.get(invoice.id) ?? [],
-  }));
 }
 
 async function createSalesInvoiceAction(formData: FormData): Promise<void> {
@@ -134,69 +121,140 @@ function statusLabel(status: string): string {
   return 'لغو شده';
 }
 
-type SalesInvoicesPageProps = {
-  tenantId?: string;
-};
-
-export async function SalesInvoicesPage({
-  tenantId = DEFAULT_TENANT_ID,
-}: SalesInvoicesPageProps = {}) {
-  let invoiceViews: SalesInvoiceView[] = [];
-  let hasDataError = false;
-
-  try {
-    invoiceViews = await loadInvoiceViews(tenantId);
-  } catch {
-    hasDataError = true;
+function sortByLabel(value: SalesOpsQueryState['sortBy']): string {
+  if (value === 'total_amount') {
+    return 'مبلغ کل';
   }
 
-  const confirmedInvoiceViews = invoiceViews.filter(
-    (invoiceView) => invoiceView.invoice.status === 'Confirmed',
+  if (value === 'customer_id') {
+    return 'مشتری';
+  }
+
+  if (value === 'status') {
+    return 'وضعیت';
+  }
+
+  return 'تاریخ فاکتور';
+}
+
+function resolveSelectedInvoice(
+  filteredInvoices: SalesInvoiceDto[],
+  pagedInvoices: SalesInvoiceDto[],
+  selectedInvoiceId: string,
+): SalesInvoiceDto | null {
+  if (selectedInvoiceId) {
+    const selected = filteredInvoices.find((invoice) => invoice.id === selectedInvoiceId);
+    if (selected) {
+      return selected;
+    }
+  }
+
+  return pagedInvoices[0] ?? null;
+}
+
+async function loadSalesOperations(
+  query: SalesOpsQueryState,
+): Promise<{
+  hasListError: boolean;
+  invoices: SalesInvoiceDto[];
+  stockMovements: StockMovementDto[];
+  selectedInvoice: SalesInvoiceDto | null;
+  hasDetailError: boolean;
+}> {
+  let invoices: SalesInvoiceDto[] = [];
+  let hasListError = false;
+
+  try {
+    invoices = await listSalesInvoices(query.tenantId);
+  } catch {
+    hasListError = true;
+  }
+
+  const listed = applySalesOpsList(invoices, query);
+  const selectedInvoice = resolveSelectedInvoice(
+    listed.filteredInvoices,
+    listed.pagedInvoices,
+    query.selectedInvoiceId,
   );
-  const checkpointLoadResult = hasDataError
-    ? 'خطا در بارگذاری داده های فروش و انبار از API'
-    : `بارگذاری موفق (${formatNumber(invoiceViews.length)} فاکتور فروش)`;
-  const checkpointStatus: VisibilityCheckpointStatus = hasDataError ? 'error' : 'success';
+
+  if (hasListError || !selectedInvoice || selectedInvoice.status !== 'Confirmed') {
+    return {
+      hasListError,
+      invoices,
+      stockMovements: [],
+      selectedInvoice,
+      hasDetailError: false,
+    };
+  }
+
+  try {
+    const stockMovements = await listInventoryMovements(selectedInvoice.id, selectedInvoice.tenant_id);
+
+    return {
+      hasListError,
+      invoices,
+      stockMovements,
+      selectedInvoice,
+      hasDetailError: false,
+    };
+  } catch {
+    return {
+      hasListError,
+      invoices,
+      stockMovements: [],
+      selectedInvoice,
+      hasDetailError: true,
+    };
+  }
+}
+
+type SalesInvoicesPageProps = {
+  searchParams?: SalesOpsSearchParams;
+};
+
+export async function SalesInvoicesPage({ searchParams }: SalesInvoicesPageProps) {
+  const query = readSalesOpsQuery(searchParams, DEFAULT_TENANT_ID);
+  const {
+    hasListError,
+    invoices,
+    stockMovements,
+    selectedInvoice,
+    hasDetailError,
+  } = await loadSalesOperations(query);
+  const listResult = applySalesOpsList(invoices, query);
+  const activeQuery: SalesOpsQueryState = {
+    ...query,
+    page: listResult.currentPage,
+    selectedInvoiceId: selectedInvoice?.id ?? '',
+  };
+
+  const showLoadingHint = !hasListError && invoices.length === 0;
+  const checkpointStatus: VisibilityCheckpointStatus = hasListError ? 'error' : 'success';
+  const checkpointLoadResult = hasListError
+    ? 'خطا در بارگذاری داده های عملیات فروش از API'
+    : `بارگذاری موفق (${formatNumber(listResult.totalCount)} فاکتور با فیلتر جاری)`;
+  const startRow =
+    listResult.totalCount === 0 ? 0 : (listResult.currentPage - 1) * query.pageSize + 1;
+  const endRow = Math.min(startRow + listResult.pagedInvoices.length - 1, listResult.totalCount);
 
   return (
     <section className="sales-page" aria-labelledby="sales-page-title">
       <header className="sales-page__header">
         <h1 id="sales-page-title" className="sales-page__title">
-          فاکتورهای فروش
+          کنسول عملیات فروش
         </h1>
         <p className="sales-page__subtitle">
-          ایجاد پیش نویس، تایید فاکتور و مشاهده خروجی حرکت انبار
+          فیلتر، مرتب سازی، صفحه بندی و بررسی جزئیات فاکتور در یک نمای عملیاتی
         </p>
       </header>
 
       <VisibilityCheckpoint
         titleId="sales-checkpoint-title"
         status={checkpointStatus}
-        dataSummary="داده های نمایش داده شده: لیست فاکتورهای فروش + وضعیت تایید + حرکات انبار فاکتورهای تاییدشده"
-        tenantId={tenantId}
+        dataSummary="داده های نمایش داده شده: لیست فاکتورهای فروش (با فیلتر/مرتب سازی/صفحه بندی) + جزئیات فاکتور انتخابی + حرکت های انبار مرتبط"
+        tenantId={query.tenantId}
         lastResult={checkpointLoadResult}
       />
-
-      <section className="sales-card" aria-labelledby="sales-tenant-title">
-        <h2 id="sales-tenant-title" className="sales-card__title">
-          context مستاجر فروش
-        </h2>
-        <form action="/sales" method="get" className="sales-form">
-          <label className="sales-field">
-            <span>شناسه مستاجر فعال</span>
-            <input name="tenant_id" defaultValue={tenantId} required />
-          </label>
-          <button type="submit" className="sales-button">
-            بارگذاری داده های tenant
-          </button>
-        </form>
-      </section>
-
-      {hasDataError ? (
-        <section className="sales-card" aria-live="polite">
-          <p className="sales-empty">اتصال به API برقرار نشد. لطفا سرویس API را اجرا کنید.</p>
-        </section>
-      ) : null}
 
       <section className="sales-card" aria-labelledby="sales-create-title">
         <h2 id="sales-create-title" className="sales-card__title">
@@ -206,7 +264,7 @@ export async function SalesInvoicesPage({
         <form action={createSalesInvoiceAction} className="sales-form">
           <label className="sales-field">
             <span>شناسه مستاجر</span>
-            <input name="tenant_id" defaultValue={tenantId} required />
+            <input name="tenant_id" defaultValue={query.tenantId} required />
           </label>
 
           <label className="sales-field">
@@ -252,91 +310,259 @@ export async function SalesInvoicesPage({
         </form>
       </section>
 
-      <section className="sales-card" aria-labelledby="sales-list-title">
-        <h2 id="sales-list-title" className="sales-card__title">
-          لیست فاکتورها
+      <section className="sales-card" aria-labelledby="sales-ops-title">
+        <h2 id="sales-ops-title" className="sales-card__title">
+          عملیات لیست فروش
         </h2>
 
-        {invoiceViews.length === 0 ? (
-          <p className="sales-empty">هنوز فاکتوری ثبت نشده است.</p>
-        ) : (
-          <div className="sales-table-wrapper">
-            <table className="sales-table">
-              <thead>
-                <tr>
-                  <th>شناسه</th>
-                  <th>مشتری</th>
-                  <th>تاریخ</th>
-                  <th>مبلغ کل</th>
-                  <th>وضعیت</th>
-                  <th>عملیات</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invoiceViews.map((invoiceView) => (
-                  <tr key={invoiceView.invoice.id}>
-                    <td dir="ltr">{invoiceView.invoice.id}</td>
-                    <td dir="ltr">{invoiceView.invoice.customer_id}</td>
-                    <td>{formatDate(invoiceView.invoice.invoice_date)}</td>
-                    <td>{formatNumber(invoiceView.invoice.total_amount)}</td>
-                    <td>{statusLabel(invoiceView.invoice.status)}</td>
-                    <td>
-                      <form action={confirmSalesInvoiceAction}>
-                        <input
-                          type="hidden"
-                          name="invoice_json"
-                          value={JSON.stringify(invoiceView.invoice)}
-                        />
-                        <button
-                          type="submit"
-                          className="sales-button sales-button--secondary"
-                          disabled={invoiceView.invoice.status !== 'Draft'}
-                        >
-                          تایید
-                        </button>
-                      </form>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+        <form action="/sales" method="get" className="sales-form sales-form--ops">
+          <input type="hidden" name="page" value="1" />
+          <label className="sales-field">
+            <span>شناسه مستاجر</span>
+            <input name="tenant_id" defaultValue={query.tenantId} required />
+          </label>
+          <label className="sales-field">
+            <span>فیلتر شناسه فاکتور</span>
+            <input name="invoice_id" defaultValue={query.invoiceIdFilter} />
+          </label>
+          <label className="sales-field">
+            <span>فیلتر مشتری</span>
+            <input name="customer_id" defaultValue={query.customerIdFilter} />
+          </label>
+          <label className="sales-field">
+            <span>وضعیت</span>
+            <select name="status" defaultValue={query.statusFilter}>
+              <option value="all">همه</option>
+              <option value="Draft">پیش نویس</option>
+              <option value="Confirmed">تایید شده</option>
+              <option value="Cancelled">لغو شده</option>
+            </select>
+          </label>
+          <label className="sales-field">
+            <span>مرتب سازی بر اساس</span>
+            <select name="sort_by" defaultValue={query.sortBy}>
+              <option value="invoice_date">تاریخ فاکتور</option>
+              <option value="total_amount">مبلغ کل</option>
+              <option value="customer_id">مشتری</option>
+              <option value="status">وضعیت</option>
+            </select>
+          </label>
+          <label className="sales-field">
+            <span>جهت مرتب سازی</span>
+            <select name="sort_direction" defaultValue={query.sortDirection}>
+              <option value="desc">نزولی</option>
+              <option value="asc">صعودی</option>
+            </select>
+          </label>
+          <label className="sales-field">
+            <span>اندازه صفحه</span>
+            <select name="page_size" defaultValue={String(query.pageSize)}>
+              {SALES_PAGE_SIZE_OPTIONS.map((size) => (
+                <option key={size} value={size}>
+                  {formatNumber(size)} ردیف
+                </option>
+              ))}
+            </select>
+          </label>
 
-      <section className="sales-card" aria-labelledby="sales-movement-title">
-        <h2 id="sales-movement-title" className="sales-card__title">
-          نتیجه حرکت انبار
-        </h2>
+          <button type="submit" className="sales-button">
+            اعمال فیلترها
+          </button>
+          <a
+            className="sales-link-button"
+            href={`/sales?tenant_id=${encodeURIComponent(query.tenantId)}`}
+          >
+            پاک کردن فیلترها
+          </a>
+        </form>
 
-        {confirmedInvoiceViews.length === 0 ? (
+        {hasListError ? (
+          <p className="sales-empty">خطا: دریافت لیست فروش انجام نشد. اتصال API را بررسی کنید.</p>
+        ) : listResult.totalCount === 0 ? (
           <p className="sales-empty">
-            بعد از تایید فاکتور، حرکت خروجی انبار در این بخش نمایش داده می شود.
+            با فیلترهای فعلی فاکتوری پیدا نشد. فیلترها را تغییر دهید یا فاکتور جدید بسازید.
           </p>
         ) : (
-          <div className="sales-movement-list">
-            {confirmedInvoiceViews.map((invoiceView) => (
-              <article key={invoiceView.invoice.id} className="sales-movement-item">
-                <h3 className="sales-movement-item__title">
-                  فاکتور <span dir="ltr">{invoiceView.invoice.id}</span>
-                </h3>
+          <>
+            <div className="sales-toolbar">
+              <p className="sales-empty">
+                نمایش {formatNumber(startRow)} تا {formatNumber(endRow)} از{' '}
+                {formatNumber(listResult.totalCount)} فاکتور | مرتب سازی: {sortByLabel(query.sortBy)} (
+                {query.sortDirection === 'asc' ? 'صعودی' : 'نزولی'})
+              </p>
+            </div>
 
-                {invoiceView.stock_movements.length === 0 ? (
-                  <p className="sales-empty">برای این فاکتور حرکتی ثبت نشده است.</p>
-                ) : (
-                  <ul className="sales-movement-item__rows">
-                    {invoiceView.stock_movements.map((movement) => (
-                      <li key={movement.id}>
-                        نوع: {movement.movement_type} | کالا:{' '}
-                        <span dir="ltr">{movement.product_id}</span> | تعداد:{' '}
-                        {formatNumber(movement.quantity)} | انبار:{' '}
-                        <span dir="ltr">{movement.warehouse_id}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </article>
-            ))}
+            <div className="sales-table-wrapper">
+              <table className="sales-table">
+                <thead>
+                  <tr>
+                    <th>شناسه</th>
+                    <th>مشتری</th>
+                    <th>تاریخ</th>
+                    <th>مبلغ کل</th>
+                    <th>وضعیت</th>
+                    <th>عملیات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {listResult.pagedInvoices.map((invoice) => (
+                    <tr
+                      key={invoice.id}
+                      className={selectedInvoice?.id === invoice.id ? 'sales-table__row--selected' : ''}
+                    >
+                      <td dir="ltr">{invoice.id}</td>
+                      <td dir="ltr">{invoice.customer_id}</td>
+                      <td>{formatDate(invoice.invoice_date)}</td>
+                      <td>{formatNumber(invoice.total_amount)}</td>
+                      <td>{statusLabel(invoice.status)}</td>
+                      <td className="sales-table__actions">
+                        <form action={confirmSalesInvoiceAction}>
+                          <input type="hidden" name="invoice_json" value={JSON.stringify(invoice)} />
+                          <button
+                            type="submit"
+                            className="sales-button sales-button--secondary"
+                            disabled={invoice.status !== 'Draft'}
+                          >
+                            تایید
+                          </button>
+                        </form>
+                        <a
+                          className="sales-link"
+                          href={buildSalesOpsHref(activeQuery, {
+                            selectedInvoiceId: invoice.id,
+                          })}
+                        >
+                          جزئیات
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <nav className="sales-pagination" aria-label="page navigation">
+              {listResult.currentPage > 1 ? (
+                <a
+                  className="sales-link"
+                  href={buildSalesOpsHref(activeQuery, {
+                    page: listResult.currentPage - 1,
+                  })}
+                >
+                  صفحه قبل
+                </a>
+              ) : (
+                <span className="sales-link sales-link--disabled">صفحه قبل</span>
+              )}
+              <span className="sales-pagination__summary">
+                صفحه {formatNumber(listResult.currentPage)} از {formatNumber(listResult.totalPages)}
+              </span>
+              {listResult.currentPage < listResult.totalPages ? (
+                <a
+                  className="sales-link"
+                  href={buildSalesOpsHref(activeQuery, {
+                    page: listResult.currentPage + 1,
+                  })}
+                >
+                  صفحه بعد
+                </a>
+              ) : (
+                <span className="sales-link sales-link--disabled">صفحه بعد</span>
+              )}
+            </nav>
+          </>
+        )}
+
+        {showLoadingHint ? (
+          <p className="sales-hint" aria-live="polite">
+            در حال همگام سازی داده های فروش با API...
+          </p>
+        ) : null}
+      </section>
+
+      <section className="sales-card" aria-labelledby="sales-detail-title">
+        <h2 id="sales-detail-title" className="sales-card__title">
+          پنل جزئیات فاکتور انتخابی
+        </h2>
+
+        {hasListError ? (
+          <p className="sales-empty">به دلیل خطای لیست، نمایش جزئیات فاکتور ممکن نیست.</p>
+        ) : selectedInvoice === null ? (
+          <p className="sales-empty">فاکتوری برای نمایش جزئیات انتخاب نشده است.</p>
+        ) : (
+          <div className="sales-movement-list">
+            <article className="sales-movement-item">
+              <h3 className="sales-movement-item__title">
+                فاکتور <span dir="ltr">{selectedInvoice.id}</span>
+              </h3>
+              <ul className="sales-movement-item__rows">
+                <li>
+                  مشتری: <span dir="ltr">{selectedInvoice.customer_id}</span>
+                </li>
+                <li>تاریخ فاکتور: {formatDate(selectedInvoice.invoice_date)}</li>
+                <li>وضعیت: {statusLabel(selectedInvoice.status)}</li>
+                <li>مبلغ کل: {formatNumber(selectedInvoice.total_amount)}</li>
+                <li>تعداد اقلام: {formatNumber(selectedInvoice.items.length)}</li>
+              </ul>
+            </article>
+
+            <article className="sales-movement-item">
+              <h3 className="sales-movement-item__title">اقلام فاکتور</h3>
+              {selectedInvoice.items.length === 0 ? (
+                <p className="sales-empty">این فاکتور هنوز آیتمی ندارد.</p>
+              ) : (
+                <div className="sales-table-wrapper">
+                  <table className="sales-table sales-table--compact">
+                    <thead>
+                      <tr>
+                        <th>کالا</th>
+                        <th>تعداد</th>
+                        <th>قیمت واحد</th>
+                        <th>تخفیف</th>
+                        <th>جمع سطر</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedInvoice.items.map((item) => (
+                        <tr key={item.id}>
+                          <td dir="ltr">{item.product_id}</td>
+                          <td>{formatNumber(item.quantity)}</td>
+                          <td>{formatNumber(item.unit_price)}</td>
+                          <td>{formatNumber(item.discount)}</td>
+                          <td>{formatNumber(item.line_total)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </article>
+
+            <article className="sales-movement-item">
+              <h3 className="sales-movement-item__title">حرکت های انبار مرتبط</h3>
+              {selectedInvoice.status !== 'Confirmed' ? (
+                <p className="sales-empty">
+                  این فاکتور هنوز تایید نشده است. پس از تایید، حرکت های خروجی انبار در این بخش دیده می شود.
+                </p>
+              ) : hasDetailError ? (
+                <p className="sales-empty">
+                  خطا: دریافت حرکت های انبار برای فاکتور انتخابی انجام نشد.
+                </p>
+              ) : stockMovements.length === 0 ? (
+                <p className="sales-empty">برای این فاکتور تاییدشده، هنوز حرکتی ثبت نشده است.</p>
+              ) : (
+                <ul className="sales-movement-item__rows">
+                  {stockMovements.map((movement) => (
+                    <li key={movement.id}>
+                      نوع: {movement.movement_type} | کالا:{' '}
+                      <span dir="ltr">{movement.product_id}</span> | تعداد:{' '}
+                      {formatNumber(movement.quantity)} | انبار:{' '}
+                      <span dir="ltr">{movement.warehouse_id}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </article>
           </div>
         )}
       </section>

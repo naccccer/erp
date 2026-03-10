@@ -1,5 +1,5 @@
 # Latest Phase Report
 
-- latest_phase: 34
-- report_file: `ai/phase-reports/phase-34.md`
-- short_summary: Workflow governance is now reviewer-free and commit-only via git-manager, with updated policy docs, tutorial guidance, and a consistency drift test.
+- latest_phase: 35
+- report_file: `ai/phase-reports/phase-35.md`
+- short_summary: Sales now has an operations-first console with tenant-aware filters, sorting, pagination, and an invoice detail panel that shows invoice items plus related stock movements.
