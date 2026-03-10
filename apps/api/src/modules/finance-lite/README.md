@@ -17,6 +17,7 @@ It does NOT manage:
 - module skeleton
 - contract folder placeholder
 - register-payment use case
+- Prisma persistence through `IPaymentRepository`
 
 ## Public Use Cases
 - RegisterPayment
@@ -24,6 +25,10 @@ It does NOT manage:
 ## Nest Wiring (Phase 19)
 - `FinanceLiteModule` registers:
   - `RegisterPaymentUseCase`
+
+## Infra Persistence (Phase 27)
+- `PAYMENT_REPOSITORY` token is bound to `PrismaPaymentRepository`.
+- `RegisterPaymentUseCase` persists payment records in Prisma instead of returning in-memory objects only.
 
 ## HTTP API (Phase 22)
 - `POST /finance/payments` -> register payment record

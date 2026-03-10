@@ -1,12 +1,21 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import type { Payment } from '../../entities/payment.entity.ts';
+import type { IPaymentRepository } from '../../infra/payment.repository.ts';
 import { RegisterPaymentUseCase } from './use-case.ts';
 
-test('registers a payment record', () => {
-  const useCase = new RegisterPaymentUseCase();
+test('registers and persists a payment record', async () => {
+  let createdPayment: Payment | null = null;
+  const repository: IPaymentRepository = {
+    create: async (payment: Payment) => {
+      createdPayment = payment;
+      return payment;
+    },
+  };
+  const useCase = new RegisterPaymentUseCase(repository);
 
-  const payment = useCase.execute({
+  const payment = await useCase.execute({
     tenant_id: 'tenant-1',
     reference_type: 'sales.invoice.confirmed',
     reference_id: 'invoice-1',
@@ -21,4 +30,5 @@ test('registers a payment record', () => {
   assert.equal(payment.status, 'Registered');
   assert.equal(payment.paid_at.toISOString(), '2026-03-07T10:00:00.000Z');
   assert.ok(payment.id.length > 0);
+  assert.equal(createdPayment?.id, payment.id);
 });

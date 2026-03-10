@@ -1,14 +1,23 @@
 import { randomUUID } from 'node:crypto';
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import type { PurchaseInvoiceItem } from '../../entities/purchase-invoice-item.entity.ts';
 import type { PurchaseInvoice } from '../../entities/purchase-invoice.entity.ts';
+import {
+  PURCHASE_INVOICE_REPOSITORY,
+  type IPurchaseInvoiceRepository,
+} from '../../infra/purchase-invoice.repository.ts';
 import type { CreatePurchaseInvoiceDto } from './dto.ts';
 
 @Injectable()
 export class CreatePurchaseInvoiceUseCase {
-  execute(input: CreatePurchaseInvoiceDto): PurchaseInvoice {
+  constructor(
+    @Inject(PURCHASE_INVOICE_REPOSITORY)
+    private readonly purchaseInvoiceRepository: IPurchaseInvoiceRepository,
+  ) {}
+
+  async execute(input: CreatePurchaseInvoiceDto): Promise<PurchaseInvoice> {
     const invoiceId = randomUUID();
 
     const items: PurchaseInvoiceItem[] = input.items.map((item) => ({
@@ -23,7 +32,7 @@ export class CreatePurchaseInvoiceUseCase {
 
     const totalAmount = items.reduce((sum, item) => sum + item.line_total, 0);
 
-    return {
+    const invoice: PurchaseInvoice = {
       id: invoiceId,
       tenant_id: input.tenant_id,
       supplier_id: input.supplier_id,
@@ -32,5 +41,7 @@ export class CreatePurchaseInvoiceUseCase {
       total_amount: totalAmount,
       items,
     };
+
+    return this.purchaseInvoiceRepository.create(invoice);
   }
 }

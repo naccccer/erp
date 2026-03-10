@@ -11,7 +11,7 @@ export class PaymentController {
 
   @RequirePermission(FINANCE_PERMISSIONS.PAYMENT_CREATE)
   @Post()
-  create(@Body() body: RegisterPaymentDto) {
+  async create(@Body() body: RegisterPaymentDto) {
     return this.registerPaymentUseCase.execute(body);
   }
 }

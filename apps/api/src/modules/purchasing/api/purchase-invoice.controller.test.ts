@@ -19,19 +19,19 @@ function makeInvoice(id: string): PurchaseInvoice {
   };
 }
 
-test('creates purchase invoice through use case', () => {
+test('creates purchase invoice through use case', async () => {
   const createUseCase = {
-    execute: () => makeInvoice('purchase-1'),
-  } as CreatePurchaseInvoiceUseCase;
+    execute: async () => makeInvoice('purchase-1'),
+  } as unknown as CreatePurchaseInvoiceUseCase;
   const confirmUseCase = {
-    execute: () => ({
+    execute: async () => ({
       invoice: { ...makeInvoice('purchase-1'), status: 'Confirmed' as const },
       events: [],
     }),
-  } as ConfirmPurchaseInvoiceUseCase;
+  } as unknown as ConfirmPurchaseInvoiceUseCase;
   const controller = new PurchaseInvoiceController(createUseCase, confirmUseCase);
 
-  const result = controller.create({
+  const result = await controller.create({
     tenant_id: 'tenant-1',
     supplier_id: 'supplier-1',
     invoice_date: new Date('2026-03-09T08:00:00.000Z'),
@@ -41,38 +41,38 @@ test('creates purchase invoice through use case', () => {
   assert.equal(result.id, 'purchase-1');
 });
 
-test('confirms purchase invoice through use case', () => {
+test('confirms purchase invoice through use case', async () => {
   const createUseCase = {
-    execute: () => makeInvoice('purchase-1'),
-  } as CreatePurchaseInvoiceUseCase;
+    execute: async () => makeInvoice('purchase-1'),
+  } as unknown as CreatePurchaseInvoiceUseCase;
   const confirmUseCase = {
-    execute: () => ({
+    execute: async () => ({
       invoice: { ...makeInvoice('purchase-1'), status: 'Confirmed' as const },
       events: [],
     }),
-  } as ConfirmPurchaseInvoiceUseCase;
+  } as unknown as ConfirmPurchaseInvoiceUseCase;
   const controller = new PurchaseInvoiceController(createUseCase, confirmUseCase);
 
-  const result = controller.confirm('purchase-1', {
+  const result = await controller.confirm('purchase-1', {
     invoice: makeInvoice('purchase-1'),
   });
 
   assert.equal(result.invoice.status, 'Confirmed');
 });
 
-test('throws when confirm path id does not match invoice id', () => {
+test('throws when confirm path id does not match invoice id', async () => {
   const createUseCase = {
-    execute: () => makeInvoice('purchase-1'),
-  } as CreatePurchaseInvoiceUseCase;
+    execute: async () => makeInvoice('purchase-1'),
+  } as unknown as CreatePurchaseInvoiceUseCase;
   const confirmUseCase = {
-    execute: () => ({
+    execute: async () => ({
       invoice: { ...makeInvoice('purchase-1'), status: 'Confirmed' as const },
       events: [],
     }),
-  } as ConfirmPurchaseInvoiceUseCase;
+  } as unknown as ConfirmPurchaseInvoiceUseCase;
   const controller = new PurchaseInvoiceController(createUseCase, confirmUseCase);
 
-  assert.throws(
+  await assert.rejects(
     () =>
       controller.confirm('purchase-2', {
         invoice: makeInvoice('purchase-1'),

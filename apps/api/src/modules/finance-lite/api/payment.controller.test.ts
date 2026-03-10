@@ -4,9 +4,9 @@ import test from 'node:test';
 import type { RegisterPaymentUseCase } from '../use-cases/register-payment/use-case.ts';
 import { PaymentController } from './payment.controller.ts';
 
-test('registers payment through use case', () => {
+test('registers payment through use case', async () => {
   const registerPaymentUseCase = {
-    execute: () => ({
+    execute: async () => ({
       id: 'payment-1',
       tenant_id: 'tenant-1',
       reference_type: 'sales.invoice',
@@ -15,10 +15,10 @@ test('registers payment through use case', () => {
       paid_at: new Date('2026-03-09T10:00:00.000Z'),
       status: 'Registered',
     }),
-  } as RegisterPaymentUseCase;
+  } as unknown as RegisterPaymentUseCase;
   const controller = new PaymentController(registerPaymentUseCase);
 
-  const result = controller.create({
+  const result = await controller.create({
     tenant_id: 'tenant-1',
     reference_type: 'sales.invoice',
     reference_id: 'invoice-1',

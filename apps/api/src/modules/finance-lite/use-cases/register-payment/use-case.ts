@@ -1,14 +1,23 @@
 import { randomUUID } from 'node:crypto';
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import type { Payment } from '../../entities/payment.entity.ts';
+import {
+  PAYMENT_REPOSITORY,
+  type IPaymentRepository,
+} from '../../infra/payment.repository.ts';
 import type { RegisterPaymentDto } from './dto.ts';
 
 @Injectable()
 export class RegisterPaymentUseCase {
-  execute(input: RegisterPaymentDto): Payment {
-    return {
+  constructor(
+    @Inject(PAYMENT_REPOSITORY)
+    private readonly paymentRepository: IPaymentRepository,
+  ) {}
+
+  async execute(input: RegisterPaymentDto): Promise<Payment> {
+    const payment: Payment = {
       id: randomUUID(),
       tenant_id: input.tenant_id,
       reference_type: input.reference_type,
@@ -17,5 +26,7 @@ export class RegisterPaymentUseCase {
       paid_at: input.paid_at,
       status: 'Registered',
     };
+
+    return this.paymentRepository.create(payment);
   }
 }

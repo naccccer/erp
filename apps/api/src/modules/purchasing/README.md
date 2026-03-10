@@ -14,6 +14,8 @@ It does NOT manage:
 ## Current Scope
 - create-purchase-invoice use case
 - confirm-purchase-invoice use case
+- Prisma persistence through `IPurchaseInvoiceRepository`
+- confirmation publishes `purchasing.invoice.confirmed` via Nest event bus
 
 ## Public Use Cases
 - CreatePurchaseInvoice
@@ -29,6 +31,11 @@ It does NOT manage:
 - `PurchasingModule` registers:
   - `CreatePurchaseInvoiceUseCase`
   - `ConfirmPurchaseInvoiceUseCase`
+
+## Infra Persistence (Phase 27)
+- `PURCHASE_INVOICE_REPOSITORY` token is bound to `PrismaPurchaseInvoiceRepository`.
+- Draft creation persists purchase invoices and invoice items in Prisma.
+- Confirmation persists status transition to `Confirmed` before emitting domain events.
 
 ## HTTP API (Phase 22)
 - `POST /purchasing/invoices` -> create draft purchase invoice
