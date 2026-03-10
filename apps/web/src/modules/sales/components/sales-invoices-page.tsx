@@ -8,6 +8,8 @@ import {
   type SalesInvoiceDto,
   type StockMovementDto,
 } from '../server/sales-api';
+import { JalaliDateField } from '../../shared/components/jalali-date-field';
+import { formatIsoToJalaliLabel } from '../../shared/date/jalali-date';
 
 const DEFAULT_TENANT_ID = 'default';
 
@@ -31,9 +33,18 @@ function readNumber(formData: FormData, key: string, fallback: number): number {
 }
 
 function parseInvoiceDateToIso(value: string): string {
-  const isoDate = `${value}T00:00:00.000Z`;
-  const date = new Date(isoDate);
-  return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return new Date().toISOString();
+  }
+
+  const directDate = new Date(trimmed);
+  if (!Number.isNaN(directDate.getTime())) {
+    return directDate.toISOString();
+  }
+
+  const dateOnly = new Date(`${trimmed}T00:00:00.000Z`);
+  return Number.isNaN(dateOnly.getTime()) ? new Date().toISOString() : dateOnly.toISOString();
 }
 
 type SalesInvoiceView = {
@@ -100,7 +111,7 @@ async function confirmSalesInvoiceAction(formData: FormData): Promise<void> {
 }
 
 function formatDate(value: string): string {
-  return new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium' }).format(new Date(value));
+  return formatIsoToJalaliLabel(value);
 }
 
 function formatNumber(value: number): string {
@@ -181,7 +192,7 @@ export async function SalesInvoicesPage() {
 
           <label className="sales-field">
             <span>تاریخ فاکتور</span>
-            <input name="invoice_date" type="date" required />
+            <JalaliDateField name="invoice_date" required />
           </label>
 
           <label className="sales-field">

@@ -31,6 +31,12 @@ This module contains the frontend shell for the ERP web app.
 - keep seeded references visible in Farsi-first checkpoint blocks
 - preserve RTL defaults while avoiding backend API contract changes
 
+## Phase 30 scope
+- add one shared Jalali date field component for active form pages
+- convert Jalali selections to ISO payload values at the form/server-action boundary
+- replace native date input usage in active sales form with the shared field
+- keep displayed invoice dates in a consistent Jalali format
+
 Constraints:
 - reuse existing backend use-cases
 - no new backend business logic

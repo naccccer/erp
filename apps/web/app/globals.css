@@ -207,6 +207,43 @@ a {
   background: #fff;
 }
 
+.jalali-date-field {
+  display: grid;
+  gap: 8px;
+}
+
+.jalali-date-field__inputs {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.jalali-date-field__part {
+  display: grid;
+  gap: 4px;
+}
+
+.jalali-date-field__part-label {
+  font-size: 12px;
+}
+
+.jalali-date-field__part select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-main);
+  background: #fff;
+}
+
+.jalali-date-field__preview {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 .sales-button {
   border: 1px solid #2f5b8d;
   background: #2f5b8d;
@@ -319,6 +356,10 @@ a {
   }
 
   .sales-form {
+    grid-template-columns: 1fr;
+  }
+
+  .jalali-date-field__inputs {
     grid-template-columns: 1fr;
   }
 }
