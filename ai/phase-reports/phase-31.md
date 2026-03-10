@@ -39,9 +39,9 @@
 
 ## Git Manager
 - commit_message: phase 31: purchasing visibility workflow page
-- commit_hash: pending
-- branch: pending
-- push_result: pending
+- commit_hash: c5f5bb9
+- branch: main
+- push_result: success
 
 ## Outcome
 - Purchasing page now supports creating a draft purchase invoice and confirming it through existing purchasing API endpoints.
