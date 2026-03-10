@@ -43,6 +43,12 @@ This module contains the frontend shell for the ERP web app.
 - show immediate purchasing checkpoint output (latest action + confirmed invoice inventory impact)
 - keep seeded defaults (`default`, `supplier-1`, `product-1`) for practical demo flow stability
 
+## Phase 32 scope
+- replace finance placeholder content with payment registration workflow UI
+- register payment through existing `POST /finance/payments` endpoint only
+- replace inventory placeholder content with tenant-aware movement lookup by reference/invoice ID
+- show explicit Farsi empty/error states for finance and inventory checkpoint panels
+
 Constraints:
 - reuse existing backend use-cases
 - no new backend business logic
@@ -55,3 +61,5 @@ Constraints:
 - UI baseline is Farsi-first with RTL direction by default
 - Sales page reads API base URL from `API_BASE_URL` (default: `http://localhost:3001`)
 - Purchasing workflow page reads API base URL from `API_BASE_URL` and stores latest checkpoint state in an HTTP-only cookie scoped to `/purchasing`
+- Finance workflow page reads API base URL from `API_BASE_URL` and stores latest checkpoint state in an HTTP-only cookie scoped to `/finance`
+- Inventory lookup page reads API base URL from `API_BASE_URL` and stores latest lookup state in an HTTP-only cookie scoped to `/inventory`

@@ -182,6 +182,7 @@ Implemented:
 - `phase-29/deterministic-demo-seed` (infra-local deterministic seed flow for tenant `default`, including Product/Customer/Supplier + invoices + stock movements + payments, with seeded ID references surfaced in visibility pages)
 - `phase-30/shared-jalali-date-field` (shared web Jalali date field with client-side Jalali->ISO conversion, replacing native date input usage on active sales form while preserving existing backend payload contract)
 - `phase-31/purchasing-visibility-workflow-page` (purchasing page now supports draft creation + confirmation through existing APIs and shows immediate inventory movement checkpoint for the confirmed purchase invoice)
+- `phase-32/finance-inventory-checkpoint-pages` (finance page now registers payments through existing API and shows response checkpoints; inventory page now performs tenant-aware movement lookup by reference/invoice ID with clear Farsi empty/error states)
 
 Next:
-- `Phase 32 - Finance + inventory checkpoint pages`
+- `Phase 33 - UI visibility integration pass (no polish scope)`
