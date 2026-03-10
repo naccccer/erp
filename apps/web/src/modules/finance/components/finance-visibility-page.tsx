@@ -1,7 +1,8 @@
-import { revalidatePath } from 'next/cache';
+﻿import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 
 import { JalaliDateField } from '../../shared/components/jalali-date-field';
+import { VisibilityCheckpoint } from '../../shared/components/visibility-checkpoint';
 import { formatIsoToJalaliLabel } from '../../shared/date/jalali-date';
 import { registerPayment } from '../server/finance-api';
 import {
@@ -94,6 +95,7 @@ async function registerPaymentAction(formData: FormData): Promise<void> {
 
     await writeWorkflowState({
       last_action_result: `پرداخت ${payment.id} با موفقیت ثبت شد.`,
+      last_action_status: 'success',
       has_error: false,
       last_registered_payment: payment,
     });
@@ -102,6 +104,7 @@ async function registerPaymentAction(formData: FormData): Promise<void> {
     await writeWorkflowState({
       ...currentState,
       has_error: true,
+      last_action_status: 'error',
       last_action_result: 'ثبت پرداخت با خطا مواجه شد. اتصال API و دسترسی tenant را بررسی کنید.',
     });
   } finally {
@@ -112,6 +115,7 @@ async function registerPaymentAction(formData: FormData): Promise<void> {
 export async function FinanceVisibilityPage() {
   const workflowState = await readWorkflowState();
   const payment = workflowState.last_registered_payment;
+  const tenantContext = payment?.tenant_id ?? DEFAULT_TENANT_ID;
 
   return (
     <section className="sales-page" aria-labelledby="finance-page-title">
@@ -124,17 +128,13 @@ export async function FinanceVisibilityPage() {
         </p>
       </header>
 
-      <section className="visibility-checkpoint" aria-labelledby="finance-checkpoint-title">
-        <h2 id="finance-checkpoint-title" className="visibility-checkpoint__title">
-          checkpoint مشاهده پذیری
-        </h2>
-        <p className="visibility-checkpoint__line">
-          داده های نمایش داده شده: نتیجه ثبت پرداخت + جزئیات پاسخ آخرین پرداخت ثبت شده
-        </p>
-        <p className="visibility-checkpoint__line">
-          آخرین نتیجه عملیات: {workflowState.last_action_result}
-        </p>
-      </section>
+      <VisibilityCheckpoint
+        titleId="finance-checkpoint-title"
+        status={workflowState.last_action_status}
+        dataSummary="داده های نمایش داده شده: نتیجه ثبت پرداخت + جزئیات پاسخ آخرین پرداخت ثبت شده"
+        tenantId={tenantContext}
+        lastResult={workflowState.last_action_result}
+      />
 
       <section className="sales-card" aria-labelledby="finance-register-title">
         <h2 id="finance-register-title" className="sales-card__title">
@@ -144,7 +144,7 @@ export async function FinanceVisibilityPage() {
         <form action={registerPaymentAction} className="sales-form">
           <label className="sales-field">
             <span>شناسه مستاجر</span>
-            <input name="tenant_id" defaultValue={DEFAULT_TENANT_ID} required />
+            <input name="tenant_id" defaultValue={tenantContext} required />
           </label>
 
           <label className="sales-field">

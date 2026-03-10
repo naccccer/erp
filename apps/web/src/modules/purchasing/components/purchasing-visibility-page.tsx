@@ -1,7 +1,8 @@
-import { revalidatePath } from 'next/cache';
+﻿import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 
 import { JalaliDateField } from '../../shared/components/jalali-date-field';
+import { VisibilityCheckpoint } from '../../shared/components/visibility-checkpoint';
 import { formatIsoToJalaliLabel } from '../../shared/date/jalali-date';
 import {
   confirmPurchaseInvoice,
@@ -110,6 +111,7 @@ async function createPurchaseInvoiceAction(formData: FormData): Promise<void> {
 
     await writeWorkflowState({
       last_action_result: `پیش نویس خرید ایجاد شد: ${createdInvoice.id}`,
+      last_action_status: 'success',
       draft_invoice: createdInvoice,
       confirmed_invoice: null,
       inventory_movements: [],
@@ -119,6 +121,7 @@ async function createPurchaseInvoiceAction(formData: FormData): Promise<void> {
     await writeWorkflowState({
       ...currentState,
       last_action_result: 'ایجاد پیش نویس خرید با خطا مواجه شد. اتصال API را بررسی کنید.',
+      last_action_status: 'error',
     });
   } finally {
     revalidatePath('/purchasing');
@@ -141,6 +144,7 @@ async function confirmPurchaseInvoiceAction(formData: FormData): Promise<void> {
     await writeWorkflowState({
       ...currentState,
       last_action_result: 'داده فاکتور برای تایید نامعتبر است.',
+      last_action_status: 'error',
     });
     revalidatePath('/purchasing');
     return;
@@ -157,6 +161,7 @@ async function confirmPurchaseInvoiceAction(formData: FormData): Promise<void> {
       last_action_result: `فاکتور ${confirmed.invoice.id} تایید شد و ${formatNumber(
         inventoryMovements.length,
       )} حرکت انبار برای آن یافت شد.`,
+      last_action_status: 'success',
       draft_invoice: confirmed.invoice,
       confirmed_invoice: confirmed.invoice,
       inventory_movements: inventoryMovements,
@@ -166,6 +171,7 @@ async function confirmPurchaseInvoiceAction(formData: FormData): Promise<void> {
     await writeWorkflowState({
       ...currentState,
       last_action_result: 'تایید فاکتور خرید یا دریافت حرکت انبار با خطا مواجه شد.',
+      last_action_status: 'error',
     });
   } finally {
     revalidatePath('/purchasing');
@@ -179,6 +185,8 @@ export async function PurchasingVisibilityPage() {
       ? workflowState.draft_invoice
       : null;
   const confirmedInvoice = workflowState.confirmed_invoice;
+  const tenantContext =
+    activeDraftInvoice?.tenant_id ?? confirmedInvoice?.tenant_id ?? DEFAULT_TENANT_ID;
 
   return (
     <section className="sales-page" aria-labelledby="purchasing-page-title">
@@ -191,18 +199,13 @@ export async function PurchasingVisibilityPage() {
         </p>
       </header>
 
-      <section className="visibility-checkpoint" aria-labelledby="purchasing-checkpoint-title">
-        <h2 id="purchasing-checkpoint-title" className="visibility-checkpoint__title">
-          checkpoint مشاهده پذیری
-        </h2>
-        <p className="visibility-checkpoint__line">
-          داده های نمایش داده شده: نتیجه ایجاد پیش نویس خرید + وضعیت تایید فاکتور + نتیجه جستجوی
-          حرکت انبار همان فاکتور
-        </p>
-        <p className="visibility-checkpoint__line">
-          آخرین نتیجه عملیات: {workflowState.last_action_result}
-        </p>
-      </section>
+      <VisibilityCheckpoint
+        titleId="purchasing-checkpoint-title"
+        status={workflowState.last_action_status}
+        dataSummary="داده های نمایش داده شده: نتیجه ایجاد پیش نویس خرید + وضعیت تایید فاکتور + نتیجه جستجوی حرکت انبار همان فاکتور"
+        tenantId={tenantContext}
+        lastResult={workflowState.last_action_result}
+      />
 
       <section className="sales-card" aria-labelledby="purchasing-create-title">
         <h2 id="purchasing-create-title" className="sales-card__title">
@@ -212,7 +215,7 @@ export async function PurchasingVisibilityPage() {
         <form action={createPurchaseInvoiceAction} className="sales-form">
           <label className="sales-field">
             <span>شناسه مستاجر</span>
-            <input name="tenant_id" defaultValue={DEFAULT_TENANT_ID} required />
+            <input name="tenant_id" defaultValue={tenantContext} required />
           </label>
 
           <label className="sales-field">

@@ -49,6 +49,12 @@ This module contains the frontend shell for the ERP web app.
 - replace inventory placeholder content with tenant-aware movement lookup by reference/invoice ID
 - show explicit Farsi empty/error states for finance and inventory checkpoint panels
 
+## Phase 33 scope
+- normalize checkpoint pattern across `sales`, `purchasing`, `inventory`, `finance`
+- keep tenant context visible and consistent in all operational checkpoint blocks
+- standardize checkpoint action status (`idle`, `success`, `error`) in page-local workflow state
+- tighten minimal responsive behavior for topbar/checkpoint/form actions on mobile
+
 Constraints:
 - reuse existing backend use-cases
 - no new backend business logic
@@ -63,3 +69,4 @@ Constraints:
 - Purchasing workflow page reads API base URL from `API_BASE_URL` and stores latest checkpoint state in an HTTP-only cookie scoped to `/purchasing`
 - Finance workflow page reads API base URL from `API_BASE_URL` and stores latest checkpoint state in an HTTP-only cookie scoped to `/finance`
 - Inventory lookup page reads API base URL from `API_BASE_URL` and stores latest lookup state in an HTTP-only cookie scoped to `/inventory`
+- Shared checkpoint presentation component lives at `apps/web/src/modules/shared/components/visibility-checkpoint.tsx`

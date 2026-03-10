@@ -1,4 +1,4 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 
 import {
   createInitialFinanceWorkflowState,
@@ -10,11 +10,13 @@ import {
 const initialState = createInitialFinanceWorkflowState();
 
 assert.equal(initialState.last_action_result, 'هیچ پرداختی ثبت نشده است.');
+assert.equal(initialState.last_action_status, 'idle');
 assert.equal(initialState.has_error, false);
 assert.equal(initialState.last_registered_payment, null);
 
 const sampleState: FinanceWorkflowState = {
   last_action_result: 'پرداخت با موفقیت ثبت شد.',
+  last_action_status: 'success',
   has_error: false,
   last_registered_payment: {
     id: 'payment-1003',
@@ -29,6 +31,6 @@ const sampleState: FinanceWorkflowState = {
 
 assert.deepEqual(parseFinanceWorkflowState(serializeFinanceWorkflowState(sampleState)), sampleState);
 assert.deepEqual(parseFinanceWorkflowState('invalid-json'), initialState);
+assert.equal(parseFinanceWorkflowState('{"last_action_status":"invalid"}').last_action_status, 'idle');
 
 console.log('finance-workflow-state tests passed');
-

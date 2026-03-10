@@ -1,6 +1,7 @@
-import { revalidatePath } from 'next/cache';
+﻿import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 
+import { VisibilityCheckpoint } from '../../shared/components/visibility-checkpoint';
 import { formatIsoToJalaliLabel } from '../../shared/date/jalali-date';
 import { listInventoryMovementsByReference } from '../server/inventory-api';
 import {
@@ -55,6 +56,7 @@ async function lookupMovementsAction(formData: FormData): Promise<void> {
       tenant_id: tenantId,
       reference_id: referenceId,
       last_action_result: 'شناسه مرجع برای جستجو الزامی است.',
+      last_action_status: 'error',
       has_error: true,
       movements: [],
     });
@@ -73,6 +75,7 @@ async function lookupMovementsAction(formData: FormData): Promise<void> {
       tenant_id: tenantId,
       reference_id: referenceId,
       last_action_result: resultMessage,
+      last_action_status: 'success',
       has_error: false,
       movements,
     });
@@ -81,6 +84,7 @@ async function lookupMovementsAction(formData: FormData): Promise<void> {
       tenant_id: tenantId,
       reference_id: referenceId,
       last_action_result: 'دریافت حرکات انبار با خطا مواجه شد. اتصال API یا tenant را بررسی کنید.',
+      last_action_status: 'error',
       has_error: true,
       movements: [],
     });
@@ -103,17 +107,13 @@ export async function InventoryVisibilityPage() {
         </p>
       </header>
 
-      <section className="visibility-checkpoint" aria-labelledby="inventory-checkpoint-title">
-        <h2 id="inventory-checkpoint-title" className="visibility-checkpoint__title">
-          checkpoint مشاهده پذیری
-        </h2>
-        <p className="visibility-checkpoint__line">
-          داده های نمایش داده شده: tenant + مرجع جستجو + نتیجه آخرین استعلام + لیست حرکات
-        </p>
-        <p className="visibility-checkpoint__line">
-          آخرین نتیجه عملیات: {lookupState.last_action_result}
-        </p>
-      </section>
+      <VisibilityCheckpoint
+        titleId="inventory-checkpoint-title"
+        status={lookupState.last_action_status}
+        dataSummary="داده های نمایش داده شده: tenant + مرجع جستجو + نتیجه آخرین استعلام + لیست حرکات"
+        tenantId={lookupState.tenant_id}
+        lastResult={lookupState.last_action_result}
+      />
 
       <section className="sales-card" aria-labelledby="inventory-lookup-title">
         <h2 id="inventory-lookup-title" className="sales-card__title">

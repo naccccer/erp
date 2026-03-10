@@ -1,4 +1,4 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 
 import {
   createInitialPurchasingWorkflowState,
@@ -13,9 +13,11 @@ assert.equal(initialState.draft_invoice, null);
 assert.equal(initialState.confirmed_invoice, null);
 assert.deepEqual(initialState.inventory_movements, []);
 assert.equal(initialState.last_action_result, 'هیچ عملیاتی ثبت نشده است.');
+assert.equal(initialState.last_action_status, 'idle');
 
 const sampleState: PurchasingWorkflowState = {
   last_action_result: 'فاکتور تایید شد.',
+  last_action_status: 'success',
   draft_invoice: {
     id: 'purchase-invoice-1002',
     tenant_id: 'default',
@@ -44,5 +46,6 @@ assert.deepEqual(
   sampleState,
 );
 assert.deepEqual(parsePurchasingWorkflowState('not-json'), initialState);
+assert.equal(parsePurchasingWorkflowState('{"last_action_status":"invalid"}').last_action_status, 'idle');
 
 console.log('purchasing-workflow-state tests passed');

@@ -196,7 +196,8 @@ a {
   color: var(--text-muted);
 }
 
-.sales-field input {
+.sales-field input,
+.sales-field select {
   width: 100%;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -304,9 +305,57 @@ a {
   gap: 8px;
 }
 
+.visibility-checkpoint__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .visibility-checkpoint__title {
   margin: 0;
   font-size: 16px;
+}
+
+.visibility-checkpoint__status {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.visibility-checkpoint--idle {
+  border-inline-start-color: #617489;
+  border-color: #c7d2de;
+  background: #f6f8fb;
+}
+
+.visibility-checkpoint--success {
+  border-inline-start-color: #1f7a4f;
+  border-color: #afd7c2;
+  background: #f3fbf7;
+}
+
+.visibility-checkpoint--error {
+  border-inline-start-color: #b53a3a;
+  border-color: #e6b8b8;
+  background: #fff6f6;
+}
+
+.visibility-checkpoint__status--idle {
+  background: #e9edf2;
+  color: #334355;
+}
+
+.visibility-checkpoint__status--success {
+  background: #dff3e8;
+  color: #1f6847;
+}
+
+.visibility-checkpoint__status--error {
+  background: #f9dede;
+  color: #9a2d2d;
 }
 
 .visibility-checkpoint__line {
@@ -355,8 +404,22 @@ a {
     padding: 16px;
   }
 
+  .web-shell__topbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
   .sales-form {
     grid-template-columns: 1fr;
+  }
+
+  .sales-card {
+    padding: 14px;
+  }
+
+  .sales-form .sales-button {
+    width: 100%;
   }
 
   .jalali-date-field__inputs {

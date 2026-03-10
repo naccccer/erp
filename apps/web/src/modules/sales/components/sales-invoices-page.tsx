@@ -1,4 +1,4 @@
-import { revalidatePath } from 'next/cache';
+﻿import { revalidatePath } from 'next/cache';
 
 import {
   confirmSalesInvoice,
@@ -9,6 +9,10 @@ import {
   type StockMovementDto,
 } from '../server/sales-api';
 import { JalaliDateField } from '../../shared/components/jalali-date-field';
+import {
+  VisibilityCheckpoint,
+  type VisibilityCheckpointStatus,
+} from '../../shared/components/visibility-checkpoint';
 import { formatIsoToJalaliLabel } from '../../shared/date/jalali-date';
 
 const DEFAULT_TENANT_ID = 'default';
@@ -130,12 +134,18 @@ function statusLabel(status: string): string {
   return 'لغو شده';
 }
 
-export async function SalesInvoicesPage() {
+type SalesInvoicesPageProps = {
+  tenantId?: string;
+};
+
+export async function SalesInvoicesPage({
+  tenantId = DEFAULT_TENANT_ID,
+}: SalesInvoicesPageProps = {}) {
   let invoiceViews: SalesInvoiceView[] = [];
   let hasDataError = false;
 
   try {
-    invoiceViews = await loadInvoiceViews(DEFAULT_TENANT_ID);
+    invoiceViews = await loadInvoiceViews(tenantId);
   } catch {
     hasDataError = true;
   }
@@ -146,6 +156,7 @@ export async function SalesInvoicesPage() {
   const checkpointLoadResult = hasDataError
     ? 'خطا در بارگذاری داده های فروش و انبار از API'
     : `بارگذاری موفق (${formatNumber(invoiceViews.length)} فاکتور فروش)`;
+  const checkpointStatus: VisibilityCheckpointStatus = hasDataError ? 'error' : 'success';
 
   return (
     <section className="sales-page" aria-labelledby="sales-page-title">
@@ -158,14 +169,27 @@ export async function SalesInvoicesPage() {
         </p>
       </header>
 
-      <section className="visibility-checkpoint" aria-labelledby="sales-checkpoint-title">
-        <h2 id="sales-checkpoint-title" className="visibility-checkpoint__title">
-          checkpoint مشاهده پذیری
+      <VisibilityCheckpoint
+        titleId="sales-checkpoint-title"
+        status={checkpointStatus}
+        dataSummary="داده های نمایش داده شده: لیست فاکتورهای فروش + وضعیت تایید + حرکات انبار فاکتورهای تاییدشده"
+        tenantId={tenantId}
+        lastResult={checkpointLoadResult}
+      />
+
+      <section className="sales-card" aria-labelledby="sales-tenant-title">
+        <h2 id="sales-tenant-title" className="sales-card__title">
+          context مستاجر فروش
         </h2>
-        <p className="visibility-checkpoint__line">
-          داده های نمایش داده شده: لیست فاکتورهای فروش + وضعیت تایید + حرکات انبار فاکتورهای تاییدشده
-        </p>
-        <p className="visibility-checkpoint__line">آخرین نتیجه بارگذاری: {checkpointLoadResult}</p>
+        <form action="/sales" method="get" className="sales-form">
+          <label className="sales-field">
+            <span>شناسه مستاجر فعال</span>
+            <input name="tenant_id" defaultValue={tenantId} required />
+          </label>
+          <button type="submit" className="sales-button">
+            بارگذاری داده های tenant
+          </button>
+        </form>
       </section>
 
       {hasDataError ? (
@@ -182,7 +206,7 @@ export async function SalesInvoicesPage() {
         <form action={createSalesInvoiceAction} className="sales-form">
           <label className="sales-field">
             <span>شناسه مستاجر</span>
-            <input name="tenant_id" defaultValue={DEFAULT_TENANT_ID} required />
+            <input name="tenant_id" defaultValue={tenantId} required />
           </label>
 
           <label className="sales-field">

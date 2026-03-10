@@ -183,6 +183,7 @@ Implemented:
 - `phase-30/shared-jalali-date-field` (shared web Jalali date field with client-side Jalali->ISO conversion, replacing native date input usage on active sales form while preserving existing backend payload contract)
 - `phase-31/purchasing-visibility-workflow-page` (purchasing page now supports draft creation + confirmation through existing APIs and shows immediate inventory movement checkpoint for the confirmed purchase invoice)
 - `phase-32/finance-inventory-checkpoint-pages` (finance page now registers payments through existing API and shows response checkpoints; inventory page now performs tenant-aware movement lookup by reference/invoice ID with clear Farsi empty/error states)
+- `phase-33/ui-visibility-integration-pass` (sales/purchasing/inventory/finance now share a normalized checkpoint status pattern with explicit tenant context, while mobile shell/checkpoint/form behavior is tightened without backend/API contract changes)
 
 Next:
-- `Phase 33 - UI visibility integration pass (no polish scope)`
+- `Phase 34 - TBD`
