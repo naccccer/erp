@@ -1,6 +1,7 @@
 # Roadmap History
 
 Archived phases extracted from ai/roadmap.md using cutoff latest_phase=24 from ai/phase-reports/latest.md.
+Deferred backlog phases are also tracked here when intentionally paused.
 
 | phase | title | status | notes |
 |---|---|---|---|
@@ -30,3 +31,9 @@ Archived phases extracted from ai/roadmap.md using cutoff latest_phase=24 from a
 | 23 | Early UI visibility: live sales → inventory flow | legacy-completed (no report file) | no dedicated phase report file |
 | 23.5 | Event orchestration standardization | completed | report file exists: ai/phase-reports/phase-23.5.md |
 | 24 | Event hardening | completed | report file exists: ai/phase-reports/phase-24.md |
+| 28 | Sales returns | deferred | Deferred after Phase 27 to prioritize UI visibility track. |
+| 29 | Inventory reaction to sales returns | deferred | Deferred after Phase 27 to prioritize UI visibility track. |
+| 30 | Reporting foundations | deferred | Deferred after Phase 27 to prioritize UI visibility track. |
+| 31 | Inventory transfer draft and confirm | deferred | Deferred after Phase 27 to prioritize UI visibility track. |
+| 32 | Inventory adjustments | deferred | Deferred after Phase 27 to prioritize UI visibility track. |
+| 33 | Price list management | deferred | Deferred after Phase 27 to prioritize UI visibility track. |

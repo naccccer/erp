@@ -1,5 +1,5 @@
 # Latest Phase Report
 
-- latest_phase: 27
-- report_file: `ai/phase-reports/phase-27.md`
-- short_summary: Purchasing and finance-lite flows now persist through Prisma repositories, and purchase confirmation now emits `purchasing.invoice.confirmed` through the event bus to persist inventory `IN` movements.
+- latest_phase: 28
+- report_file: `ai/phase-reports/phase-28.md`
+- short_summary: Web shell navigation now uses real routes for sales/purchasing/inventory/finance with route-aware active state, and each page includes a visibility checkpoint block showing displayed data and latest load status.

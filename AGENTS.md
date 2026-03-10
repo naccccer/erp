@@ -70,6 +70,49 @@ Never execute multiple roadmap phases at once.
 
 ---
 
+# Sub-Agent Orchestration (Mandatory)
+
+For roadmap phase execution, always use these agents in sequence:
+
+1. `erp-reviewer` for PLAN approval
+2. `erp-reviewer` for DIFF approval
+3. `git-manager` for git actions after DIFF approval
+
+## Trigger contract for `erp-reviewer`
+
+Every call must include:
+- `phase`
+- `review_type` (`PLAN` or `DIFF`)
+- `files`
+- `diff` (`PLAN` can be `N/A`)
+- `attempt`
+
+Rules:
+- Do not implement before PLAN is `APPROVED`.
+- Do not run git actions before DIFF is `APPROVED`.
+- If reviewer returns `REJECTED`, apply fixes and re-request review.
+- Record reviewer output in phase report `Reviewer Gate` section.
+
+## Trigger contract for `git-manager`
+
+Call only after DIFF approval with:
+- `phase`
+- `verdict` (`APPROVED`)
+- `approval_token` (`APR-...`)
+- `files` (approved changed files)
+
+Rules:
+- Stage only approved phase files.
+- Commit message format: `phase <number>: <short description>`.
+- Push current branch.
+- Record git-manager output in phase report `Git Manager` section.
+
+Default behavior:
+- Treat this orchestration as always-on for new sessions.
+- Do not wait for human reminder to invoke these agents.
+
+---
+
 # Scope Guard
 
 - Do not modify unrelated modules.

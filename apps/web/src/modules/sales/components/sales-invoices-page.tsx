@@ -130,6 +130,9 @@ export async function SalesInvoicesPage() {
   const confirmedInvoiceViews = invoiceViews.filter(
     (invoiceView) => invoiceView.invoice.status === 'Confirmed',
   );
+  const checkpointLoadResult = hasDataError
+    ? 'خطا در بارگذاری داده های فروش و انبار از API'
+    : `بارگذاری موفق (${formatNumber(invoiceViews.length)} فاکتور فروش)`;
 
   return (
     <section className="sales-page" aria-labelledby="sales-page-title">
@@ -141,6 +144,16 @@ export async function SalesInvoicesPage() {
           ایجاد پیش نویس، تایید فاکتور و مشاهده خروجی حرکت انبار
         </p>
       </header>
+
+      <section className="visibility-checkpoint" aria-labelledby="sales-checkpoint-title">
+        <h2 id="sales-checkpoint-title" className="visibility-checkpoint__title">
+          checkpoint مشاهده پذیری
+        </h2>
+        <p className="visibility-checkpoint__line">
+          داده های نمایش داده شده: لیست فاکتورهای فروش + وضعیت تایید + حرکات انبار فاکتورهای تاییدشده
+        </p>
+        <p className="visibility-checkpoint__line">آخرین نتیجه بارگذاری: {checkpointLoadResult}</p>
+      </section>
 
       {hasDataError ? (
         <section className="sales-card" aria-live="polite">

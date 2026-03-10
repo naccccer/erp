@@ -174,10 +174,11 @@ Implemented:
 - `core/infra-repositories-event-bus` (sales/purchasing/finance-lite/inventory Prisma repositories, Nest event bus wiring, and confirmation -> inventory movement persistence loops)
 - `core/http-api` (sales, purchasing, finance-lite controllers and Nest HTTP bootstrap in `main.ts`)
 - `web/live-sales-visibility` (sales page now consumes API endpoints and shows stock movements from `GET /inventory/movements`)
+- `web/navigation-visibility-shell-hardening` (real `sales`/`purchasing`/`inventory`/`finance` routes, route-aware sidebar active state, and per-page visibility checkpoint blocks)
 - `event-hardening` (publisher-level listener isolation, structured event logs, and duplicate delivery coverage)
 - `inventory/negative-stock-guard` (sales stock-out rejects insufficient quantity before creating `OUT` movements)
 - `api/permission-expansion` (tenant permission guard + endpoint-level permission metadata + tenant-scoped repository queries)
 - `purchasing-finance/infra-repositories` (purchase invoices and payments persist via Prisma; purchase confirmation persists `IN` inventory movement through event bus)
 
 Next:
-- `Phase 28 - Sales returns`
+- `Phase 29 - Deterministic demo data seeding`

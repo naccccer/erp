@@ -135,6 +135,26 @@ a {
   gap: 16px;
 }
 
+.visibility-page {
+  display: grid;
+  gap: 16px;
+}
+
+.visibility-page__header {
+  display: grid;
+  gap: 6px;
+}
+
+.visibility-page__title {
+  margin: 0;
+  font-size: 24px;
+}
+
+.visibility-page__subtitle {
+  margin: 0;
+  color: var(--text-muted);
+}
+
 .sales-page__header {
   display: grid;
   gap: 6px;
@@ -235,6 +255,27 @@ a {
 .sales-empty {
   margin: 0;
   color: var(--text-muted);
+}
+
+.visibility-checkpoint {
+  background: #f8fbff;
+  border: 1px solid #b9d4ef;
+  border-inline-start: 4px solid #2f5b8d;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.visibility-checkpoint__title {
+  margin: 0;
+  font-size: 16px;
+}
+
+.visibility-checkpoint__line {
+  margin: 0;
+  color: var(--text-main);
+  font-size: 14px;
 }
 
 .sales-movement-list {

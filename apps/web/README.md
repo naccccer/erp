@@ -20,6 +20,12 @@ This module contains the frontend shell for the ERP web app.
 - load inventory movements through `GET /inventory/movements?invoiceId=`
 - keep the sales flow Farsi-first with RTL layout
 
+## Phase 28 scope
+- add real shell routes for `sales`, `purchasing`, `inventory`, and `finance`
+- remove dead sidebar links and make active-state route-aware
+- add a visible checkpoint panel on every operational page
+- keep all page labels Farsi-first in RTL layout
+
 Constraints:
 - reuse existing backend use-cases
 - no new backend business logic
