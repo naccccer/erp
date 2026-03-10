@@ -25,16 +25,18 @@ Use this exact structure for every phase.
 - result:
   - <pass/fail and short note>
 
-## Reviewer Gate
-- plan_verdict: <APPROVED|REJECTED>
-- diff_verdict: <APPROVED|REJECTED>
-- approval_token: <APR-...|none>
+## Approval
+- approval_type: <human|none>
+- approval_status: <approved|not-required|pending>
+- approval_reference: <message/date or none>
 
 ## Git Manager
+- verdict: <APPROVED|REJECTED|NOT-RUN>
+- staged_files: <semicolon-separated file list|none>
 - commit_message: <phase N: ...>
-- commit_hash: <hash>
-- branch: <branch>
-- push_result: <success|failed: reason>
+- commit_hash: <hash|none>
+- branch: <branch|none>
+- commit_result: <success|not-run|failed: reason>
 
 ## Outcome
 - <what is now working>

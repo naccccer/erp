@@ -1,136 +1,90 @@
-# راهنمای جریان کار AI در این ریپو
+# AI Workflow Tutorial (v2)
 
-این راهنما توضیح می‌دهد:
-- جریان اجرای فازها دقیقا چطور است
-- هر قانون از کجا کنترل می‌شود
-- اگر بخواهید روند را بهینه کنید، کدام فایل را باید تغییر دهید
+This guide defines the practical phase execution workflow for this repository.
 
----
+## 1) Canonical phase flow
 
-## 1) جریان استاندارد اجرای فاز (مرحله‌به‌مرحله)
+Use this order for every roadmap phase:
 
-برای هر فاز roadmap این ترتیب را نگه دارید:
-
-1. فقط یک فاز را انتخاب کن (`ai/roadmap.md`)
-2. Plan کوتاه بده
-3. فایل‌های هدف را شفاف لیست کن
-4. گیت PLAN از `erp-reviewer`
-5. پیاده‌سازی
-6. اجرای تست/بیلد مرتبط
-7. گیت DIFF از `erp-reviewer`
-8. اجرای `git-manager` (stage -> commit -> push)
-9. آپدیت گزارش‌ها:
+1. Select one phase from `ai/roadmap.md`.
+2. Write a short implementation plan.
+3. List the files that will change.
+4. Wait for human approval.
+5. Implement only the approved phase scope.
+6. Run relevant checks/tests.
+7. Run `git-manager` for commit-only execution.
+8. Update phase reports:
    - `ai/phase-reports/phase-<number>.md`
    - `ai/phase-reports/latest.md`
-10. توقف
+9. Run `pnpm run phase-reports:archive`.
+10. Stop.
 
-نکته مهم: اجرای موازی چند فاز در sessionهای مختلف با قواعد فعلی توصیه نمی‌شود.
+Non-negotiables:
+- one phase at a time
+- small diffs
+- no unrelated refactor
+- module boundaries respected
+- Prisma only in `infra/`
 
----
+## 2) Git-manager gate and payload contract
 
-## 2) منبع هر قانون کجاست؟
+Use git-manager only after implementation and validation.
 
-### قوانین اصلی اجرا
-- `AGENTS.md`
-  - منبع اصلی رفتار agent در این ریپو
-  - شامل: scope guard، frontend/backend rules، workflow roadmap-driven
+Required payload keys:
+- `phase`
+- `verdict` (`APPROVED` only)
+- `files` (approved changed files)
 
-### قانون‌های همیشه‌فعال Cursor
-- `.cursor/rules/erp.mdc`
-  - state machine اجرای فاز (`PLAN_REVIEW -> IMPLEMENT -> DIFF_REVIEW -> GIT`)
-  - سیاست retry/escalation
+Rules:
+- stage only approved phase files
+- commit message format: `phase <number>: <short description>`
+- commit only; do not push in this workflow
 
-### رفتار reviewer
-- `.cursor/agents/erp-reviewer.md`
-  - قرارداد ورودی/خروجی reviewer
-  - شروط APPROVED/REJECTED
+Expected git-manager output keys:
+- `staged_files`
+- `commit_message`
+- `commit_hash`
+- `branch`
+- `commit_result`
 
-### رفتار git-manager
-- `.cursor/agents/git-manager.md`
-  - قرارداد handoff
-  - قوانین commit/push و محدودیت stage
+## 3) Retry and escalation policy
 
-### قواعد کدنویسی
-- `ai/coding-rules.md`
-- `ai/done-checklist.md`
+Retry policy for non-human issues:
+- start with `attempt = 1`
+- if validation fails or git-manager rejects contract/scope, fix and retry
+- max retries: `3`
 
-### نقشه محصول/معماری
-- `ai/project-map.md`
-- `ai/module-index.md`
+Escalate immediately to human (no retry loop) when:
+- merge conflicts appear
+- branch permissions or protection block commit flow
+- required work crosses approved phase scope
 
-### قالب و وضعیت گزارش فاز
-- `ai/phase-report-template.md`
-- `ai/phase-reports/latest.md`
+## 4) Where to change what
 
----
+- `AGENTS.md`: canonical workflow authority and repo-level rules
+- `.cursor/rules/erp.mdc`: always-on enforcement and state machine for Cursor
+- `.cursor/agents/git-manager.md`: commit gate contract and git behavior
+- `ai/roadmap.md`: active phase definitions and done criteria
+- `ai/phase-report-template.md`: required report structure for each phase
+- `ai/scripts/archive-phase-reports.cjs`: moves completed non-latest phase reports to archive
+- `ai/tests/workflow-rules-consistency.test.cjs`: drift guard for workflow contract alignment
+- `docs/run-tutorial.md`: quick operational runbook with workflow tutorial links
 
-## 3) اگر بخواهم چیزی را تغییر دهم، کدام فایل؟
+## 5) Quick checklist before closing a phase
 
-### تغییر ترتیب یا سخت‌گیری اجرای فازها
-- اول: `AGENTS.md`
-- بعد: `.cursor/rules/erp.mdc`
+- exactly one roadmap phase executed
+- changed files match approved phase scope
+- required tests/checks passed
+- git-manager contract respected and commit completed (or explicitly deferred)
+- phase report and latest report updated
+- completed non-latest phase reports archived
 
-### تغییر قرارداد reviewer (کلیدها، معیارها، خروجی)
-- `.cursor/agents/erp-reviewer.md`
+## 6) Common mistakes to avoid
 
-### تغییر سیاست git (فرمت commit، stage policy، push policy)
-- `.cursor/agents/git-manager.md`
-
-### تغییر تعریف کیفیت کد/تست/دامنه تغییرات
-- `ai/coding-rules.md`
-- `ai/done-checklist.md`
-
-### تغییر خود roadmap (فازها، done criteria)
-- `ai/roadmap.md`
-- فازهای قدیمی: `ai/roadmap-history.md`
-
----
-
-## 4) روال امن برای Tuning قوانین
-
-پیشنهاد عملی:
-
-1. یک شاخه مجزا بساز (مثلا `workflow-tuning`)
-2. فقط فایل‌های rule/process را تغییر بده
-3. تغییرات را کوچک و مستقل نگه دار
-4. یک dry-run روی یک فاز کم‌ریسک انجام بده
-5. اگر friction کمتر شد و quality افت نکرد، merge کن
-
----
-
-## 5) الگوی درخواست خوب برای اجرای فاز
-
-نمونه:
-
-```text
-Execute Phase <N> only.
-Follow AGENTS.md strictly.
-Show plan + files first.
-Run reviewer PLAN gate, then implement.
-Run relevant tests/build.
-Run reviewer DIFF gate.
-Run git-manager flow.
-Update phase report files and stop.
-```
-
----
-
-## 6) خطاهای رایج
-
-- شروع پیاده‌سازی قبل از PLAN approval
-- اجرای چند فاز هم‌زمان
-- تغییر فایل‌های خارج از scope فاز
-- فراموش کردن `latest.md` در phase report
-- commit کردن فایل‌هایی که reviewer تایید نکرده
-
----
-
-## 7) چک‌لیست سریع قبل از پایان هر فاز
-
-- فقط یک فاز اجرا شد
-- تغییرات خارج از scope نداریم
-- تست/بیلد مرتبط پاس شده
-- reviewer PLAN و DIFF هر دو APPROVED
-- git-manager اجرا شده
-- `phase-<n>.md` و `latest.md` آپدیت شده‌اند
-
+- implementing before human approval
+- mixing tasks from multiple phases
+- staging unrelated files in the phase commit
+- forgetting to update `ai/phase-reports/latest.md`
+- forgetting to run `pnpm run phase-reports:archive`
+- leaving contradictions between `AGENTS.md` and `.cursor/rules/erp.mdc`
+- reintroducing reviewer-agent dependencies in active workflow docs

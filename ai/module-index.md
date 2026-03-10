@@ -18,7 +18,8 @@ Do not scan unrelated modules unless contracts/events require it.
 ## Roadmap Lifecycle
 - `ai/roadmap.md` contains active phases only.
 - `ai/roadmap-history.md` contains compact archived phases.
-- `ai/phase-reports/*` contains detailed execution evidence per completed phase.
+- `ai/phase-reports/latest.md` and current `phase-<n>.md` stay in root.
+- `ai/phase-reports/archive/*` contains completed non-latest phase reports.
 
 ---
 

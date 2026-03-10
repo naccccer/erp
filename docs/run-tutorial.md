@@ -2,6 +2,10 @@
 
 این راهنما سریع‌ترین مسیر اجرای نسخه نمایشی ERP را نشان می‌دهد.
 
+## شروع سریع جریان کار AI
+برای اجرای فازها با قوانین به‌روز workflow:
+- `docs/ai-workflow-tutorial.md`
+
 ## پیش‌نیازها
 1. Node.js و pnpm نصب باشد.
 2. Docker برای PostgreSQL فعال باشد.
@@ -62,6 +66,6 @@ Invoke-WebRequest 'http://localhost:3001/sales/invoices?tenant_id=default' -Head
 جزئیات کامل شناسه‌ها در فایل زیر نگهداری می‌شود:
 - `docs/demo-dataset-assumptions.md`
 
-## راهنمای جریان کار AI
-برای اینکه بدانید جریان اجرای فازها چیست و قوانین را از کجا باید تغییر دهید:
-- `docs/ai-workflow-tutorial.md`
+## منابع تکمیلی
+- راهنمای کامل جریان کار AI: `docs/ai-workflow-tutorial.md`
+- فرضیات دیتاست دمو: `docs/demo-dataset-assumptions.md`

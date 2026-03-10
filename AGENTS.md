@@ -62,7 +62,7 @@ If `ai/roadmap.md` exists:
 1. Execute **only one phase at a time**
 2. First generate a **short implementation plan**
 3. Show the **files that will change**
-4. Wait for approval (human or reviewer agent)
+4. Wait for human approval
 5. Implement the phase
 6. Stop when the phase is finished
 
@@ -72,39 +72,19 @@ Never execute multiple roadmap phases at once.
 
 # Sub-Agent Orchestration (Mandatory)
 
-For roadmap phase execution, always use these agents in sequence:
-
-1. `erp-reviewer` for PLAN approval
-2. `erp-reviewer` for DIFF approval
-3. `git-manager` for git actions after DIFF approval
-
-## Trigger contract for `erp-reviewer`
-
-Every call must include:
-- `phase`
-- `review_type` (`PLAN` or `DIFF`)
-- `files`
-- `diff` (`PLAN` can be `N/A`)
-- `attempt`
-
-Rules:
-- Do not implement before PLAN is `APPROVED`.
-- Do not run git actions before DIFF is `APPROVED`.
-- If reviewer returns `REJECTED`, apply fixes and re-request review.
-- Record reviewer output in phase report `Reviewer Gate` section.
+For roadmap phase execution, use `git-manager` after implementation and validation.
 
 ## Trigger contract for `git-manager`
 
-Call only after DIFF approval with:
+Call only after human approval and implementation with:
 - `phase`
 - `verdict` (`APPROVED`)
-- `approval_token` (`APR-...`)
 - `files` (approved changed files)
 
 Rules:
 - Stage only approved phase files.
 - Commit message format: `phase <number>: <short description>`.
-- Push current branch.
+- Commit only; do not push.
 - Record git-manager output in phase report `Git Manager` section.
 
 Default behavior:
@@ -153,6 +133,7 @@ After completing each roadmap phase, always update:
 
 - `ai/phase-reports/phase-<number>.md`
 - `ai/phase-reports/latest.md`
+- run `pnpm run phase-reports:archive` to move completed non-latest reports to `ai/phase-reports/archive`
 
 Use `ai/phase-report-template.md` format.
 This is mandatory even when phases are executed in separate sessions.

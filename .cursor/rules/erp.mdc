@@ -1,5 +1,5 @@
 ---
-description: ERP workflow guardrails and reviewer/git-manager handoff.
+description: ERP workflow guardrails and git-manager commit handoff.
 globs:
   - "**/*"
 alwaysApply: true
@@ -9,137 +9,86 @@ alwaysApply: true
 
 This repository uses an AI-driven workflow for building the ERP.
 
-The system follows a **builder -> reviewer -> implement -> reviewer -> git-manager** loop.
+## Policy precedence
+- `AGENTS.md` is the canonical workflow authority.
+- This file enforces AGENTS rules for Cursor runtime behavior.
+- If any conflict appears, follow `AGENTS.md` and align this file in the same phase.
 
----
-
-# Project Context
-
+## Minimal startup context
 Before starting work, read:
-
-- AGENTS.md
-- ai/project-map.md
-- ai/module-index.md
-- ai/roadmap.md
-- ai/coding-rules.md
-- ai/done-checklist.md
-- ai/reviewer-rules.md
-
-Canonical reviewer policy is in:
-- `.cursor/agents/erp-reviewer.md`
+- `AGENTS.md`
+- `ai/roadmap.md`
+- `ai/project-map.md`
+- `ai/module-index.md`
 
 If editing a module, also read:
+- module `README.md`
+- module local `AGENTS.md` if it exists
 
-- module README.md
-- module AGENTS.md
-
----
-
-# Handoff Contract
-
-All builder -> reviewer requests must include:
-
+## Git-Manager handoff contract
+All builder -> git-manager requests must include:
 - `phase`
-- `review_type`
-- `files`
-- `diff`
-- `attempt`
+- `verdict` (must be `APPROVED`)
+- `files` (approved changed files)
 
-All reviewer responses must include:
-
-- `verdict`
-- `reason`
-- `violations`
-- `required_fixes`
-- `cautions`
-- `approval_token`
-
-All reviewer -> git-manager requests must include:
-
-- `phase`
-- `verdict`
-- `approval_token`
-- `files`
-
-`git-manager` must refuse commit/push unless:
-
+`git-manager` must refuse commit unless:
 - `verdict = APPROVED`
-- `approval_token` starts with `APR-`
+- `files` is non-empty and phase-scoped
 
----
-
-# Autonomous State Machine
-
+## Autonomous state machine
 Use this exact flow:
-
-`PLAN_REVIEW -> IMPLEMENT -> DIFF_REVIEW -> GIT`
+`PLAN -> HUMAN_APPROVAL -> IMPLEMENT -> VALIDATE -> GIT_COMMIT`
 
 Rules:
-
-1. Start with `attempt = 1`
-2. On `REJECTED` during `PLAN_REVIEW` or `DIFF_REVIEW`:
-   - auto-fix based on `required_fixes`
+1. Start with `attempt = 1` for validation/commit issues.
+2. On validation or git-manager rejection:
+   - apply targeted fixes
    - increment `attempt`
-   - retry from the relevant review state
-3. Max retries for non-git issues: `3`
+   - retry from the relevant state
+3. Max retries for non-human issues: `3`
 4. If `attempt > 3`: stop and escalate to human
 
 Immediate human escalation events (no retry):
-
 - merge conflict
-- non-fast-forward / push rejection
-- remote auth or permission failure
+- branch protection or permission failure
+- ambiguous scope requiring cross-phase work
 
 Never merge, rebase, resolve conflicts automatically, or rewrite history.
 
----
-
-# Phase Execution
-
+## Phase execution
 When `ai/roadmap.md` exists:
-
-1. Execute **only one phase**
-2. Generate a **short implementation plan**
-3. List **files that will change**
-4. Send the plan to the **erp-reviewer** agent using the contract keys
-5. If reviewer `APPROVED` -> implement the phase
-6. Send the final diff to **erp-reviewer** using the contract keys
-7. If reviewer `APPROVED` and token is valid -> send git work to **git-manager**
-8. Stop after commit and push
+1. Execute only one phase
+2. Generate a short implementation plan
+3. List files that will change
+4. Wait for human approval
+5. Implement the phase
+6. Run relevant tests/checks
+7. Send git work to git-manager for commit-only execution
+8. Update `ai/phase-reports/phase-<number>.md` and `ai/phase-reports/latest.md`
+9. Run `pnpm run phase-reports:archive`
+10. Stop after commit and report updates
 
 Never execute multiple phases.
 
----
-
-# Scope Guard
-
+## Scope guard
 The AI must:
-
-- modify only the module related to the phase
+- modify only the module/area related to the phase
 - keep diffs small
 - avoid unrelated refactors
 
 If something outside the phase is required:
-
 - list the prerequisite
 - stop execution
 
----
-
-# Architecture Guardrails
-
+## Architecture guardrails
 Follow these rules strictly:
-
 - Modular monolith architecture
 - Each module owns its data
 - No direct cross-module data writes
 - Cross-module communication through events/contracts
 - Prisma may only be used inside `infra/`
 
----
-
-# Coding Structure
-
+## Coding structure
 Modules follow this structure:
 
 ```text
@@ -152,43 +101,29 @@ module/
 ```
 
 Use-case folders contain:
-
 - `use-case.ts`
 - `dto.ts`
 - `test.ts`
 
----
-
-# Documentation Policy
-
+## Documentation policy
 If behavior or contracts change, update:
-
 - module `README.md`
 - `ai/project-map.md`
 - `packages/contracts`
 
 Code and documentation must remain consistent.
 
----
-
-# Git Workflow Output
-
+## Git workflow output
 After successful git-manager execution, return:
-
 - `staged_files`
 - `commit_message`
 - `commit_hash`
 - `branch`
-- `push_result`
+- `commit_result`
 
----
-
-# Completion Conditions
-
+## Completion conditions
 A phase is finished only when:
-
 - roadmap phase goal is satisfied
 - tests exist for new behavior
-- scope stayed inside module
-- reviewer agent approves the diff
-- git-manager commits and pushes successfully
+- scope stayed inside phase intent
+- git-manager commits successfully or is explicitly deferred by user

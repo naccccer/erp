@@ -11,7 +11,8 @@
 
 ---
 
-Completed phases up to `24` moved to `ai/roadmap-history.md`.
+Archived legacy phases are tracked in `ai/roadmap-history.md`.
+Active and planned phases remain listed in this file.
 
 ---
 
@@ -85,8 +86,8 @@ Done when:
 ---
 
 Note:
-Backend feature phases 28-33 are deferred for a visibility-first UI track.
-Backend logic and API contracts stay stable during these phases.
+Legacy deferred backlog IDs that previously used numbers 28-33 are tracked in
+`ai/roadmap-history.md` as non-active legacy IDs to avoid phase number collisions.
 
 ---
 
@@ -189,3 +190,114 @@ Done when:
   seed -> sales -> purchasing -> inventory -> finance
 - no dead navigation paths, no mixed LTR defaults, and no Gregorian-only date entry points
 - scope remains UI-focused; backend behavior remains unchanged
+
+---
+
+## Phase 34 - Workflow review-centric v2 hardening
+Goal:
+Make workflow governance faster and clearer by removing reviewer-agent coupling
+and enforcing commit-only git manager behavior.
+
+Tasks:
+- deliver workflow review report in final response with:
+  executive summary, findings, KEEP/TUNE/REMOVE, v2 flow, migration, rollback
+- remove reviewer-agent workflow artifacts from active policy/docs
+- update git-manager policy to commit only (no push)
+- rewrite `docs/ai-workflow-tutorial.md` in English-first with exact phase flow,
+  contracts, retry/escalation, rule-file mapping, checklists, and common mistakes
+- add clear workflow tutorial pointers in `docs/run-tutorial.md`
+- add `ai/tests/workflow-rules-consistency.test.cjs`
+- add `test:workflow-rules` script in `package.json`
+- update phase report artifacts for phase 34
+
+Done when:
+- no active workflow file requires `erp-reviewer`
+- git-manager contract and docs enforce commit-only behavior
+- workflow tutorial and run tutorial link updates are in place
+- `pnpm run test:workflow-rules` passes
+- `pnpm run test:structure-drift` passes
+
+---
+
+## Phase 35 - Sales ops console v1
+Goal:
+Upgrade sales into a production-like operational screen.
+
+Tasks:
+- add sales list filters, sorting, and pagination support
+- add sales detail panel with invoice items and related stock movements
+- ensure stable loading, empty, and error states for sales operations
+
+Done when:
+- sales can be used for daily operations without manual record hunting
+
+---
+
+## Phase 36 - Master data read readiness
+Goal:
+Remove hardcoded/manual ID dependency from transactional UX.
+
+Tasks:
+- add product/customer/supplier read APIs with tenant-aware filtering
+- replace raw ID entry patterns in transactional forms with selectable master data
+- keep read contracts explicit and aligned with module boundaries
+
+Done when:
+- transactional forms use real selectable master data instead of manual raw IDs
+
+---
+
+## Phase 37 - Purchasing + finance operational lists
+Goal:
+Convert purchasing/finance from checkpoint-first to operations-first.
+
+Tasks:
+- add purchase invoice and payment list/detail APIs
+- add purchasing and finance table/list pages with filters, sorting, and status badges
+- keep create/confirm/register flows compatible with existing domain rules
+
+Done when:
+- purchasing and finance both have production-style list workflows
+
+---
+
+## Phase 38 - Inventory ledger + stock visibility
+Goal:
+Make inventory inspectable beyond reference-id lookup.
+
+Tasks:
+- extend inventory ledger filters (product, warehouse, movement type, date range, reference)
+- add pagination for inventory movement reads
+- add stock-balance read view derived from stock movements
+
+Done when:
+- users can inspect both movement history and current stock state from UI
+
+---
+
+## Phase 39 - Cross-module UX hardening
+Goal:
+Unify operational UX across sales/purchasing/inventory/finance.
+
+Tasks:
+- standardize table/form interaction patterns across operational modules
+- standardize status and feedback blocks (loading/success/error/empty)
+- tighten responsive operational layouts while keeping Farsi-first RTL defaults
+
+Done when:
+- cross-module UX consistency reaches a product-grade baseline
+
+---
+
+## Phase 40 - Product readiness review + continuation decision
+Goal:
+Decide next roadmap phases using measurable readiness KPIs.
+
+Tasks:
+- create KPI scorecard for phases 35-39 outcomes
+- create frontend/backend parity matrix for operations coverage
+- produce prioritized candidate phase list with impact/effort/risk
+- select continuation phases and add them to roadmap based on review evidence
+
+Done when:
+- continuation phases are explicitly selected and added to roadmap from KPI-based review evidence
