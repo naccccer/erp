@@ -37,6 +37,12 @@ This module contains the frontend shell for the ERP web app.
 - replace native date input usage in active sales form with the shared field
 - keep displayed invoice dates in a consistent Jalali format
 
+## Phase 31 scope
+- replace purchasing placeholder content with a real create-draft + confirm workflow page
+- use existing purchasing create/confirm endpoints and inventory movement lookup endpoint only
+- show immediate purchasing checkpoint output (latest action + confirmed invoice inventory impact)
+- keep seeded defaults (`default`, `supplier-1`, `product-1`) for practical demo flow stability
+
 Constraints:
 - reuse existing backend use-cases
 - no new backend business logic
@@ -48,3 +54,4 @@ Constraints:
 - no business logic is implemented in this phase
 - UI baseline is Farsi-first with RTL direction by default
 - Sales page reads API base URL from `API_BASE_URL` (default: `http://localhost:3001`)
+- Purchasing workflow page reads API base URL from `API_BASE_URL` and stores latest checkpoint state in an HTTP-only cookie scoped to `/purchasing`

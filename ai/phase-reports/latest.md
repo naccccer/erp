@@ -1,5 +1,5 @@
 # Latest Phase Report
 
-- latest_phase: 30
-- report_file: `ai/phase-reports/phase-30.md`
-- short_summary: Web sales form now uses a shared RTL Jalali date field with client-side Jalali-to-ISO conversion, and sales date rendering is standardized in Jalali format.
+- latest_phase: 31
+- report_file: `ai/phase-reports/phase-31.md`
+- short_summary: Purchasing page now runs a practical draft-create + confirm workflow against existing endpoints and shows an immediate inventory movement checkpoint for the confirmed invoice.

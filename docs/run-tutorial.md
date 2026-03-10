@@ -61,3 +61,7 @@ Invoke-WebRequest 'http://localhost:3001/sales/invoices?tenant_id=default' -Head
 ## شناسه‌های دمو برای فرم‌های UI
 جزئیات کامل شناسه‌ها در فایل زیر نگهداری می‌شود:
 - `docs/demo-dataset-assumptions.md`
+
+## راهنمای جریان کار AI
+برای اینکه بدانید جریان اجرای فازها چیست و قوانین را از کجا باید تغییر دهید:
+- `docs/ai-workflow-tutorial.md`

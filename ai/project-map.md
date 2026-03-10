@@ -181,6 +181,7 @@ Implemented:
 - `purchasing-finance/infra-repositories` (purchase invoices and payments persist via Prisma; purchase confirmation persists `IN` inventory movement through event bus)
 - `phase-29/deterministic-demo-seed` (infra-local deterministic seed flow for tenant `default`, including Product/Customer/Supplier + invoices + stock movements + payments, with seeded ID references surfaced in visibility pages)
 - `phase-30/shared-jalali-date-field` (shared web Jalali date field with client-side Jalali->ISO conversion, replacing native date input usage on active sales form while preserving existing backend payload contract)
+- `phase-31/purchasing-visibility-workflow-page` (purchasing page now supports draft creation + confirmation through existing APIs and shows immediate inventory movement checkpoint for the confirmed purchase invoice)
 
 Next:
-- `Phase 31 - Purchasing visibility workflow page`
+- `Phase 32 - Finance + inventory checkpoint pages`
