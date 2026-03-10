@@ -17,3 +17,7 @@ It does NOT manage:
 - product entity placeholder
 - product unit entity placeholder
 - price list entity placeholder
+
+## Phase 29 demo seed note
+- Deterministic demo records are seeded in Prisma table `Product` for tenant `default`.
+- Seeded IDs are stable for UI forms, including `product-1` and `product-2`.

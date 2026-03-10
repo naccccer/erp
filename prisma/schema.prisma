@@ -17,6 +17,31 @@ enum MovementType {
   OUT
 }
 
+model Product {
+  id        String @id @default(uuid())
+  tenant_id String
+  name      String
+  sku       String
+
+  @@index([tenant_id])
+}
+
+model Customer {
+  id           String @id @default(uuid())
+  tenant_id    String
+  display_name String
+
+  @@index([tenant_id])
+}
+
+model Supplier {
+  id           String @id @default(uuid())
+  tenant_id    String
+  display_name String
+
+  @@index([tenant_id])
+}
+
 model SalesInvoice {
   id           String             @id @default(uuid())
   tenant_id    String

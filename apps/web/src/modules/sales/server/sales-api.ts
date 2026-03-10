@@ -1,15 +1,29 @@
 const DEFAULT_API_BASE_URL = 'http://localhost:3001';
+const DEFAULT_TENANT_ID = 'default';
+const DEFAULT_ROLE = 'manager';
 
 function apiBaseUrl(): string {
   const value = process.env.API_BASE_URL ?? DEFAULT_API_BASE_URL;
   return value.endsWith('/') ? value.slice(0, -1) : value;
 }
 
-async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
+function resolveRole(): string {
+  return process.env.WEB_ROLE ?? DEFAULT_ROLE;
+}
+
+function tenantHeaders(tenantId: string): Record<string, string> {
+  return {
+    'x-tenant-id': tenantId,
+    'x-role': resolveRole(),
+  };
+}
+
+async function requestJson<T>(path: string, init?: RequestInit, tenantId = DEFAULT_TENANT_ID): Promise<T> {
   const response = await fetch(`${apiBaseUrl()}${path}`, {
     ...init,
     headers: {
       'content-type': 'application/json',
+      ...tenantHeaders(tenantId),
       ...(init?.headers ?? {}),
     },
     cache: 'no-store',
@@ -71,7 +85,7 @@ export async function createSalesInvoice(input: CreateSalesInvoiceApiInput): Pro
   return requestJson<SalesInvoiceDto>('/sales/invoices', {
     method: 'POST',
     body: JSON.stringify(input),
-  });
+  }, input.tenant_id);
 }
 
 export async function confirmSalesInvoice(invoice: SalesInvoiceDto): Promise<{
@@ -80,15 +94,17 @@ export async function confirmSalesInvoice(invoice: SalesInvoiceDto): Promise<{
   return requestJson<{ invoice: SalesInvoiceDto }>(`/sales/invoices/${invoice.id}/confirm`, {
     method: 'POST',
     body: JSON.stringify({ invoice }),
-  });
+  }, invoice.tenant_id);
 }
 
 export async function listSalesInvoices(tenantId: string): Promise<SalesInvoiceDto[]> {
-  return requestJson<SalesInvoiceDto[]>(`/sales/invoices?tenant_id=${encodeURIComponent(tenantId)}`);
+  return requestJson<SalesInvoiceDto[]>(`/sales/invoices?tenant_id=${encodeURIComponent(tenantId)}`, undefined, tenantId);
 }
 
-export async function listInventoryMovements(invoiceId: string): Promise<StockMovementDto[]> {
+export async function listInventoryMovements(invoiceId: string, tenantId = DEFAULT_TENANT_ID): Promise<StockMovementDto[]> {
   return requestJson<StockMovementDto[]>(
     `/inventory/movements?invoiceId=${encodeURIComponent(invoiceId)}`,
+    undefined,
+    tenantId,
   );
 }

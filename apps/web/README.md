@@ -26,6 +26,11 @@ This module contains the frontend shell for the ERP web app.
 - add a visible checkpoint panel on every operational page
 - keep all page labels Farsi-first in RTL layout
 
+## Phase 29 scope
+- surface deterministic demo dataset IDs on purchasing/inventory/finance visibility pages
+- keep seeded references visible in Farsi-first checkpoint blocks
+- preserve RTL defaults while avoiding backend API contract changes
+
 Constraints:
 - reuse existing backend use-cases
 - no new backend business logic

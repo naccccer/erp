@@ -10,6 +10,9 @@
     "dev:web": "pnpm --dir apps/web exec next dev -p 3000",
     "ports:free": "powershell -NoProfile -ExecutionPolicy Bypass -File ai/scripts/free-ports.ps1",
     "dev:all": "pnpm run ports:free && concurrently --kill-others-on-fail -n API,WEB -c blue,green \"pnpm run dev:api\" \"pnpm run dev:web\"",
+    "seed:demo": "pnpm exec ts-node --project apps/api/tsconfig.json apps/api/src/infra/demo-seed/seed-demo.ts --reset",
+    "seed:demo:reset": "pnpm run seed:demo",
+    "test:seed-demo": "pnpm exec ts-node --project apps/api/tsconfig.json apps/api/src/infra/demo-seed/test.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:structure-drift": "node ai/tests/structure-drift.test.cjs"
   },

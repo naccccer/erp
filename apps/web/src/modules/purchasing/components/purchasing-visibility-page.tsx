@@ -24,11 +24,34 @@ export function PurchasingVisibilityPage() {
           checkpoint مشاهده پذیری
         </h2>
         <p className="visibility-checkpoint__line">
-          داده های نمایش داده شده: عنوان ماژول، توضیح محدوده فاز، و وضعیت فعال بودن مسیر خرید
+          داده های نمایش داده شده: عنوان ماژول، توضیح محدوده فاز، و شناسه های دیتاست دمو خرید
         </p>
         <p className="visibility-checkpoint__line">
-          آخرین نتیجه بارگذاری: صفحه خرید با موفقیت بارگذاری شد
+          آخرین نتیجه بارگذاری: دیتاست دمو خرید برای tenant پیش فرض نمایش داده شد
         </p>
+      </section>
+
+      <section className="sales-card" aria-labelledby="purchasing-demo-dataset-title">
+        <h2 id="purchasing-demo-dataset-title" className="sales-card__title">
+          داده دمو خرید (فاز ۲۹)
+        </h2>
+        <ul className="sales-movement-item__rows">
+          <li>
+            tenant: <span dir="ltr">default</span>
+          </li>
+          <li>
+            تامین کننده فرم خرید: <span dir="ltr">supplier-1</span>
+          </li>
+          <li>
+            کالای فرم خرید: <span dir="ltr">product-1</span>
+          </li>
+          <li>
+            فاکتور تاییدشده: <span dir="ltr">purchase-invoice-1001</span>
+          </li>
+          <li>
+            فاکتور پیش نویس: <span dir="ltr">purchase-invoice-1002</span>
+          </li>
+        </ul>
       </section>
     </section>
   );

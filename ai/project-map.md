@@ -179,6 +179,7 @@ Implemented:
 - `inventory/negative-stock-guard` (sales stock-out rejects insufficient quantity before creating `OUT` movements)
 - `api/permission-expansion` (tenant permission guard + endpoint-level permission metadata + tenant-scoped repository queries)
 - `purchasing-finance/infra-repositories` (purchase invoices and payments persist via Prisma; purchase confirmation persists `IN` inventory movement through event bus)
+- `phase-29/deterministic-demo-seed` (infra-local deterministic seed flow for tenant `default`, including Product/Customer/Supplier + invoices + stock movements + payments, with seeded ID references surfaced in visibility pages)
 
 Next:
-- `Phase 29 - Deterministic demo data seeding`
+- `Phase 30 - Shared Shamsi (Jalali) date field`

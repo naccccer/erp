@@ -45,7 +45,9 @@ async function loadInvoiceViews(tenantId: string): Promise<SalesInvoiceView[]> {
   const invoices = await listSalesInvoices(tenantId);
   const confirmedInvoices = invoices.filter((invoice) => invoice.status === 'Confirmed');
   const movementEntries = await Promise.all(
-    confirmedInvoices.map(async (invoice) => [invoice.id, await listInventoryMovements(invoice.id)] as const),
+    confirmedInvoices.map(
+      async (invoice) => [invoice.id, await listInventoryMovements(invoice.id, tenantId)] as const,
+    ),
   );
   const movementsByInvoiceId = new Map<string, StockMovementDto[]>(movementEntries);
 
